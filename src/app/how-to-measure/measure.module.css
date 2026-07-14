@@ -1,0 +1,156 @@
+.hero {
+  background: linear-gradient(135deg, var(--brand-primary), #FBB91E);
+  padding: calc(var(--nav-height) + 4rem) 0 5rem;
+  color: #fff;
+}
+
+.hero h1 {
+  color: #fff;
+  margin-bottom: .75rem;
+}
+
+.hero p {
+  color: rgba(255, 255, 255, .75);
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.rules {
+  background: var(--off-white);
+}
+
+.sectionHead {
+  color: var(--brand-primary);
+  margin-bottom: 1.5rem;
+}
+
+.rulesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.rule {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-100);
+}
+
+.ruleNum {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rule h3 {
+  color: var(--brand-primary);
+  font-size: .95rem;
+  margin-bottom: .4rem;
+}
+
+.rule p {
+  font-size: .875rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.sectionLight {
+  background: var(--off-white);
+}
+
+.sectionWhite {
+  background: var(--white);
+}
+
+.shapeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.shapeText h2 {
+  color: var(--brand-primary);
+  margin-bottom: 1.25rem;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.steps li {
+  font-size: .9rem;
+  line-height: 1.75;
+}
+
+.shapeImg {
+  height: 320px;
+  border-radius: var(--radius-xl);
+}
+
+.imgCaption {
+  font-size: .8rem;
+  color: var(--gray-400);
+  text-align: center;
+  z-index: 1;
+  padding: 1rem;
+}
+
+.ctaSection {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  padding: 5rem 0;
+  color: #fff;
+}
+
+.ctaSection h2 {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.ctaSection p {
+  color: rgba(255, 255, 255, .75);
+  margin-bottom: 2rem;
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .rulesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .shapeGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .shapeImg {
+    height: 250px;
+  }
+}

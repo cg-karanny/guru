@@ -1,0 +1,276 @@
+.pageWrapper {
+  width: 100%;
+  background: var(--white);
+}
+
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--nav-height));
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--gray-50);
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    height: 60vh;
+    min-height: 300px;
+  }
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.heroImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--text-primary);
+  opacity: 0.6;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--white);
+  padding: 0 20px;
+  max-width: 1000px;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+@keyframes slideInOut {
+  0% {
+    transform: translateX(50px);
+    opacity: 0;
+  }
+
+  5% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  28% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  33.33% {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+}
+
+.slideText1,
+.slideText2,
+.slideText3 {
+  font-family: var(--font-poppins);
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+}
+
+.slideText1 {
+  animation: slideInOut 9s linear infinite;
+}
+
+.slideText2 {
+  animation: slideInOut 9s linear 3s infinite;
+}
+
+.slideText3 {
+  animation: slideInOut 9s linear 6s infinite;
+}
+
+.heroContent p,
+.heroContent h2 {
+  display: none;
+  /* fallback removed, now using h1 for all */
+}
+
+
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 20px;
+}
+
+.section {
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-poppins);
+  font-size: 2.5rem;
+  color: var(--brand-primary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.sectionText {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  margin-top: 3rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
+
+.gridImage {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gridContent {
+  padding: 1rem;
+}
+
+.gridTitle {
+  font-family: var(--font-poppins);
+  font-size: 2rem;
+  color: var(--brand-primary);
+  ;
+  margin-bottom: 1rem;
+}
+
+.gridText {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.list li {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.list li span {
+  color: var(--success);
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.iconsSection {
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.iconsTitle {
+  font-family: var(--font-poppins);
+  font-size: 2rem;
+  color: var(--brand-primary);
+  margin-bottom: 2rem;
+}
+
+.iconsGrid {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 0 auto;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .iconsGrid {
+    flex-wrap: wrap;
+  }
+}
+
+.iconCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.iconImageWrapper {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.iconText {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.certifiedSection {
+  background-color: var(--gray-50);
+  padding: 4rem 20px;
+  border-radius: var(--radius-md);
+  margin-top: 4rem;
+  text-align: center;
+}

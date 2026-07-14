@@ -1,0 +1,259 @@
+.hero {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding-top: var(--nav-height);
+  transition: background 0.8s ease;
+}
+
+.hero.hasImage {
+  /* Additional styles if needed when images are present */
+}
+
+.hero.hasImage .content {
+  padding-top: 7rem;
+}
+
+.blob1 {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .05);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.blob2 {
+  position: absolute;
+  bottom: -20%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .04);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  padding-block: 2rem 8rem;
+  max-width: 900px;
+}
+
+/* Animations */
+@keyframes enterAnim {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes exitAnim {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.enter {
+  animation: enterAnim .6s cubic-bezier(.4, 0, .2, 1) both;
+}
+
+.exit {
+  animation: exitAnim .35s cubic-bezier(.4, 0, .2, 1) both;
+}
+
+.badge {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  border: 1.5px solid var(--brand-accent);
+  padding: .25rem .8rem;
+  border-radius: 4px;
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, .3);
+}
+
+.subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: rgba(255, 255, 255, .8);
+  max-width: 800px;
+  line-height: 1.8;
+  /* margin-bottom: 0.5rem; */
+  min-height: 105px;
+}
+
+.ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.scrollCue {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .6);
+  transition: color .2s ease;
+  animation: bounce 2s ease infinite;
+}
+
+.scrollCue:hover {
+  color: rgba(255, 255, 255, .9);
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+/* Arrows */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .15);
+  border: 1.5px solid rgba(255, 255, 255, .25);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, .9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.arrow:hover {
+  background: rgba(255, 255, 255, .3);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.arrowLeft {
+  left: 1.5rem;
+}
+
+.arrowRight {
+  right: 1.5rem;
+}
+
+/* Dots */
+.dots {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: .6rem;
+  z-index: 5;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .35);
+  border: none;
+  cursor: pointer;
+  transition: all .3s ease;
+  position: relative;
+}
+
+.dot::after {
+  content: '';
+  position: absolute;
+  top: -16px;
+  bottom: -16px;
+  left: -16px;
+  right: -16px;
+}
+
+.dotActive {
+  width: 28px;
+  background: var(--brand-accent);
+}
+
+/* Counter */
+.counter {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 2rem;
+  font-size: .78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .5);
+  letter-spacing: .1em;
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 70vh;
+  }
+
+  .hero.hasImage {
+    min-height: 70vh;
+  }
+
+  .content {
+    padding-block: 1rem 6rem;
+  }
+
+  .hero.hasImage .content {
+    padding-top: 1rem;
+  }
+
+  .subtitle {
+    min-height: 145px;
+  }
+
+  .arrow {
+    display: none;
+  }
+
+  .counter {
+    display: none;
+  }
+}

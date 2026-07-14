@@ -1,0 +1,210 @@
+.section {
+  background: var(--off-white);
+}
+
+.grid {
+  display: grid;
+  /* grid-template-columns: 1fr 1fr; */
+  gap: 4rem;
+  align-items: center;
+}
+
+/* Text */
+.textSide h2 {
+  color: var(--brand-primary);
+  margin: 1rem 0 .5rem;
+  text-align: center;
+}
+
+.textSide p {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  justify-content: center;
+}
+
+.logoBox {
+  padding: .5rem 1.25rem;
+  border: 2px solid var(--brand-primary);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--brand-primary);
+  letter-spacing: .04em;
+}
+
+/* Brand logo image holders */
+.brandLogoBox {
+  width: 140px;
+  height: 50px;
+  /* border: 2px solid var(--brand-primary); */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background: #fff; */
+  margin-top: 1%;
+  flex-shrink: 0;
+}
+
+.brandLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cross {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #00000096;
+}
+
+.quote {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--brand-primary) !important;
+  margin: 0 !important;
+}
+
+/* Badge grid */
+.badgeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.textSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: all .25s ease;
+}
+
+.badge:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.badgeImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.badgeLabel {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--brand-primary-dark);
+  line-height: 1.4;
+}
+
+/* Image */
+.imageSide {
+  position: relative;
+}
+
+.imgFrame {
+  position: relative;
+}
+
+.mainImg {
+  height: 500px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #1a3c5e22 0%, #FBB91E22 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.imgLabel {
+  text-align: center;
+  font-size: .9rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  line-height: 1.6;
+  z-index: 1;
+}
+
+.floatCard {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -1.5rem;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.8rem;
+}
+
+.floatCard div strong {
+  display: block;
+  font-size: .9rem;
+  color: var(--brand-primary-dark);
+}
+
+.floatCard div p {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .imageSide {
+    order: -1;
+  }
+
+  .mainImg {
+    height: 300px;
+  }
+
+  .floatCard {
+    right: 0;
+    bottom: -1rem;
+  }
+
+  .badgeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

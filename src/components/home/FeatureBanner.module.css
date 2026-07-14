@@ -1,0 +1,61 @@
+.banner {
+  background: linear-gradient(135deg, var(--brand-primary), #515478);
+  padding: 1.5rem 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  justify-content: center;
+  padding: .5rem 1rem;
+  border-right: 1px solid rgba(255, 255, 255, .15);
+}
+
+.item:last-child {
+  border-right: none;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.label {
+  font-size: .875rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .item {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+  }
+
+  .item:last-child,
+  .item:nth-last-child(2) {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .item {
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+  }
+}

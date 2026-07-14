@@ -1,0 +1,51 @@
+.strip {
+  background: transparent;
+  overflow: hidden;
+  padding: 1.5rem 0;
+  margin-bottom: 3.5rem;
+  position: relative;
+}
+
+.track {
+  display: flex;
+  white-space: nowrap;
+  animation: scroll 30s linear infinite;
+  width: max-content;
+  align-items: center;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.track:hover {
+  animation-play-state: paused;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  padding-right: 4rem;
+}
+
+.imgWrapper {
+  position: relative;
+  height: 90px;
+  width: 200px;
+}
+
+.imgWrapper img {
+  filter: grayscale(100%) opacity(70%);
+  transition: filter 0.3s ease;
+}
+
+.imgWrapper img:hover {
+  filter: grayscale(0%) opacity(100%);
+}

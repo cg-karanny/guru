@@ -1,0 +1,108 @@
+.cookieOverlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: var(--gap-md);
+  pointer-events: none; /* Let clicks pass through overlay area */
+  animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cookieBanner {
+  max-width: var(--max-w-narrow);
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  padding: var(--gap-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  pointer-events: auto; /* Re-enable clicks for the banner itself */
+}
+
+@media (min-width: 768px) {
+  .cookieBanner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.cookieContent {
+  flex: 1;
+}
+
+.cookieContent h3 {
+  font-size: 1.15rem;
+  margin-bottom: var(--gap-xs);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+}
+
+.cookieContent p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cookieActions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .cookieActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Local styles to override / augment globals.css buttons */
+.btn {
+  font-size: 0.85rem !important;
+  padding: 0.6rem 1.25rem !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.btnOutline {
+  border: 1.5px solid var(--gray-300) !important;
+  background: var(--white) !important;
+  color: var(--text-primary) !important;
+}
+
+.btnOutline:hover {
+  border-color: var(--gray-400) !important;
+  background: var(--gray-50) !important;
+}
+
+.btnGhost {
+  border: 1.5px solid transparent !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btnGhost:hover {
+  color: var(--text-primary) !important;
+  background: var(--gray-100) !important;
+  text-decoration: none;
+}

@@ -1,0 +1,90 @@
+.page {
+  min-height: 100vh;
+  background: var(--off-white);
+  padding: calc(var(--nav-height) + 2rem) 0 5rem;
+}
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow-md);
+  flex-wrap: wrap;
+}
+.avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.header h1 { color: var(--brand-primary); font-size: 1.5rem; margin-bottom: .2rem; }
+.header p  { color: var(--text-muted); font-size: .875rem; }
+.header .btn { margin-left: auto; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.dashCard {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  position: relative;
+  transition: all .3s ease;
+}
+.dashCard:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--brand-primary); }
+.adminCard { border-color: var(--brand-accent); }
+.cardIcon { font-size: 2rem; margin-bottom: .25rem; }
+.dashCard h3 { color: var(--brand-primary); font-size: 1.05rem; }
+.dashCard p  { font-size: .875rem; color: var(--text-secondary); line-height: 1.5; }
+.arrow      { position: absolute; top: 2rem; right: 2rem; font-size: 1.2rem; color: var(--gray-300); transition: all .2s ease; }
+.dashCard:hover .arrow { color: var(--brand-primary); transform: translateX(4px); }
+
+.recentOrders {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+}
+.recentOrders h2 { color: var(--brand-primary); margin-bottom: 1.5rem; }
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+.emptyState span { font-size: 3rem; display: block; margin-bottom: 1rem; }
+.emptyState a { color: var(--brand-primary); font-weight: 600; }
+
+@media (max-width: 1024px) { .grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } }

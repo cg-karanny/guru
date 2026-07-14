@@ -1,0 +1,47 @@
+.layout {
+  min-height: 100vh;
+  padding-top: var(--nav-height);
+  background: var(--off-white);
+}
+
+.main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.main h1 {
+  color: var(--brand-primary);
+  margin-bottom: 2rem;
+}
+
+.formCard {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 3rem;
+}
+.formCard h2 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--brand-primary); }
+
+.blogGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.blogCard {
+  background: #fff;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.blogImg {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: var(--gray-200);
+}

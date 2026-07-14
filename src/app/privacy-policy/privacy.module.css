@@ -1,0 +1,30 @@
+.hero {
+  background: linear-gradient(135deg, #0d2438, var(--brand-primary));
+  padding: calc(var(--nav-height) + 4rem) 0 5rem;
+}
+.hero h1 { color: #fff; margin-bottom: .75rem; }
+.hero p  { color: rgba(255,255,255,.75); font-size: 1.05rem; }
+.section { background: var(--off-white); }
+.intro {
+  background: var(--brand-light);
+  border-left: 4px solid var(--brand-primary);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: .95rem;
+  color: var(--brand-primary);
+  font-weight: 500;
+  margin-bottom: 2.5rem;
+}
+.policySection {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-100);
+}
+.policySection h2 { color: var(--brand-primary); font-size: 1.1rem; margin-bottom: .75rem; }
+.policySection p  { font-size: .9rem; color: var(--text-secondary); line-height: 1.8; }
+.list { display: flex; flex-direction: column; gap: .75rem; }
+.list li { font-size: .9rem; color: var(--text-secondary); line-height: 1.7; }
+.list li strong { color: var(--brand-primary); }

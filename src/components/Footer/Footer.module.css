@@ -1,0 +1,247 @@
+.footer {
+  background: linear-gradient(180deg, #0d2438 0%, #0a1c2c 100%);
+  color: rgba(255, 255, 255, .75);
+  margin-top: auto;
+  padding-top: 0;
+}
+
+.footerTop {
+  padding: 2rem 0 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr;
+  gap: 3rem;
+}
+
+/* Brand */
+.brand p {
+  font-size: .9rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, .55);
+  margin-top: 1rem;
+  max-width: 280px;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.brandLogo span:first-child {
+  font-size: 1.8rem;
+}
+
+.socialRow {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.socialLink {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, .6);
+  transition: all .25s ease;
+}
+
+.socialLink:hover {
+  background: var(--brand-accent);
+  border-color: var(--brand-accent);
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+.socialLink svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Column */
+.colTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  margin-bottom: 1.25rem;
+}
+
+/* Links */
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.footerLink {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .875rem;
+  color: rgba(255, 255, 255, .55);
+  transition: color .2s ease;
+}
+
+.footerLink:hover {
+  color: var(--brand-accent);
+}
+
+.footerLink svg {
+  opacity: .5;
+}
+
+/* Contact */
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+}
+
+.contactList li {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  font-size: .875rem;
+  color: rgba(255, 255, 255, .55);
+  line-height: 1.5;
+}
+
+.contactList li svg {
+  flex-shrink: 0;
+  margin-top: .2rem;
+  opacity: .6;
+}
+
+.contactList a {
+  color: rgba(255, 255, 255, .7);
+  transition: color .2s ease;
+}
+
+.contactList a:hover {
+  color: var(--brand-accent);
+}
+
+/* Newsletter */
+.newsText {
+  font-size: .875rem;
+  color: rgba(255, 255, 255, .5);
+  margin-bottom: 1rem;
+}
+
+.newsForm {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.newsInput {
+  flex: 1;
+  min-width: 0;
+  padding: .6rem 1rem;
+  border: 1.5px solid rgba(255, 255, 255, .15);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  font-size: .875rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color .2s ease;
+}
+
+.newsInput::placeholder {
+  color: rgba(255, 255, 255, .35);
+}
+
+.newsInput:focus {
+  border-color: var(--brand-accent);
+}
+
+/* Bottom */
+.footerBottom {
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  padding: 1.25rem 0;
+}
+
+.footerBottom .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footerBottom p {
+  font-size: .82rem;
+  color: rgba(255, 255, 255, .35);
+}
+
+.footerBottom strong {
+  color: rgba(255, 255, 255, .55);
+}
+
+.bottomLinks {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .82rem;
+}
+
+.bottomLinks a {
+  color: rgba(255, 255, 255, .35);
+  transition: color .2s ease;
+}
+
+.bottomLinks a:hover {
+  color: var(--brand-accent);
+}
+
+.bottomLinks span {
+  color: rgba(255, 255, 255, .2);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footerBottom .container {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.adminFooter {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+}
+
+@media (max-width: 1024px) {
+  .adminFooter {
+    margin-left: 0;
+    width: 100%;
+  }
+}

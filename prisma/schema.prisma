@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Note: FabricBrand + FabricItem support the customize page fabric step
+
+generator client {
+  provider   = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  ORDER_RECEIVED
+  STITCHING
+  PROCESSING
+  PACKING
+  SHIPPING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  orders    Order[]
+  cartItems CartItem[]
+  cartData  Json?      // Stores the whole cart (both custom & non-custom)
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  status         OrderStatus @default(ORDER_RECEIVED)
+  items          Json
+  total          Float       // This will be subtotal + deliveryCharge
+  deliveryCharge Float       @default(0)
+  paymentMethod  String      @default("COD") // e.g., "STRIPE", "COD"
+  trackingNumber String?
+  shippingAddr   Json?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g. "hero_slide_1", "about_image_1"
+  url         String
+  altText     String?
+  fileType    String   @default("image") // image | video | pdf
+  uploadedAt  DateTime @default(now())
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String
+  imageUrl    String?
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model Product {
+  id              String     @id @default(cuid())
+  name            String
+  sku             String     @unique
+  description     String
+  richDescription String?    // JSON string: structured content blocks
+  faqData         String?    // JSON string: [{q, a}]
+  listingPrice    Float
+  sellingPrice    Float
+  imageUrl        String
+  stock           Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  cartItems       CartItem[]
+}
+
+model LinkedProduct {
+  id              String   @id @default(cuid())
+  name            String
+  link            String
+  imageUrl        String
+  startingPrice   Float
+  description     String
+  richDescription String?  // JSON string: structured content blocks
+  faqData         String?  // JSON string: [{q, a}]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FabricBrand {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  createdAt DateTime     @default(now())
+  fabrics   FabricItem[]
+}
+
+model FabricItem {
+  id       String      @id @default(cuid())
+  fabricId String                         // matches image filename without ext
+  label    String
+  price    Float
+  imageUrl String
+  brandId  String
+  brand    FabricBrand @relation(fields: [brandId], references: [id])
+  createdAt DateTime   @default(now())
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  type      String   // e.g. "REGISTER", "FORGOT_PASSWORD", "CHANGE_PASSWORD"
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, type])
+}

@@ -1,0 +1,136 @@
+.section {
+  background: var(--off-white);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  /* give more space to text */
+  gap: 4rem;
+  align-items: center;
+}
+
+/* Image */
+.imageSide {
+  position: relative;
+}
+
+.img {
+  height: 480px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #6b3a2a22, #c0652b22);
+}
+
+.imgLabel {
+  text-align: center;
+  font-size: .9rem;
+  color: var(--gray-500);
+  z-index: 1;
+  line-height: 1.6;
+}
+
+.imgBadge {
+  position: absolute;
+  bottom: -1.5rem;
+  left: -1.5rem;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: 1.5rem;
+}
+
+.imgBadge div strong {
+  display: block;
+  font-size: .9rem;
+  color: var(--brand-primary-dark);
+}
+
+.imgBadge div p {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Text */
+.textSide h2 {
+  color: var(--brand-primary);
+  margin: 1rem 0 1rem;
+  line-height: 1.2;
+}
+
+.dynamic {
+  color: var(--brand-dynamic);
+  font-style: italic;
+  transition: opacity .3s ease, transform .3s ease;
+  display: inline-block;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.textSide p {
+  line-height: 1.85;
+  margin-bottom: 2rem;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.stat strong {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+}
+
+.stat span {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ctaBtn {
+  margin-top: .5rem;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .imageSide {
+    order: -1;
+  }
+
+  .img {
+    height: 320px;
+  }
+
+  .imgBadge {
+    left: 0;
+    bottom: -1rem;
+  }
+}

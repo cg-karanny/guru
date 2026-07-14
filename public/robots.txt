@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /customize
+Allow: /shop
+Disallow: /admin
+Disallow: /api
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account/orders
+
+Sitemap: https://cushionguru.com/sitemap.xml
