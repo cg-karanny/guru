@@ -6,16 +6,47 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import styles from '@/app/admin/admin.module.css';
 
-const NAV_ITEMS = [
+type NavChild = {
+  href: string;
+  label: string;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: string;
+  children?: NavChild[];
+};
+
+const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
   { href: '/admin/orders', label: 'Orders', icon: '📦' },
   { href: '/admin/products', label: 'Products', icon: '🛍️' },
   { href: '/admin/subscribers', label: 'Subscribers', icon: '📧' },
   { href: '/admin/messages', label: 'Messages', icon: '✉️' },
-  { href: '/admin/fabrics', label: 'Fabrics', icon: '🧵' },
+  {
+    href: '/admin/calculator',
+    label: 'Calculator Management',
+    icon: '🧮',
+    children: [
+      {
+        href: '/admin/fabrics',
+        label: 'Fabric Management',
+      },
+      {
+        href: '/admin/shapes',
+        label: 'Shape Images',
+      },
+      {
+        href: '/admin/calculator/cushion-types',
+        label: 'Margin Management',
+      },
+    ],
+  },
+  // { href: '/admin/fabrics', label: 'Fabric Management', icon: '🧵' },
   { href: '/admin/hero', label: 'Hero Images', icon: '🖼️' },
   { href: '/admin/blogs', label: 'Blogs', icon: '📝' },
-  { href: '/admin/users', label: 'Users Data', icon: '👥' },
+  { href: '/admin/users', label: 'User Management', icon: '👥' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ];
 
@@ -25,6 +56,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth <= 1024);
@@ -45,7 +77,41 @@ export default function AdminSidebar() {
 
       <nav className={styles.sideNav}>
         {visibleItems.map(item => {
-          const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+          const isChildActive = item.children?.some(child => pathname === child.href || pathname.startsWith(`${child.href}/`)) ?? false;
+          const isActive = isChildActive || pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+
+          if (item.children?.length) {
+            const isExpanded = calculatorOpen || isActive;
+            return (
+              <div key={item.href} className={styles.navGroup}>
+                <button
+                  type="button"
+                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                  onClick={() => setCalculatorOpen(open => !open)}
+                  aria-expanded={isExpanded}
+                >
+                  <span>{item.icon}</span>
+                  <span className={styles.navItemText}>{item.label}</span>
+                  <span className={`${styles.navChevron} ${isExpanded ? styles.navChevronOpen : ''}`}>⌄</span>
+                </button>
+
+                {isExpanded && (
+                  <div className={styles.subNav}>
+                    {item.children.map(child => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`${styles.subNavItem} ${pathname === child.href ? styles.subNavItemActive : ''}`}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.href}
@@ -78,16 +144,28 @@ export default function AdminSidebar() {
           <div className={styles.mobileMoreContent}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', padding: '1rem' }}>
               {moreItems.map(item => {
-                const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+                const isChildActive = item.children?.some(child => pathname === child.href || pathname.startsWith(`${child.href}/`)) ?? false;
+                const isActive = isChildActive || pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`${styles.moreMenuItem} ${isActive ? styles.moreMenuItemActive : ''}`}
-                    onClick={() => setMoreOpen(false)}
-                  >
-                    <span>{item.icon}</span>{item.label}
-                  </Link>
+                  <React.Fragment key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`${styles.moreMenuItem} ${isActive ? styles.moreMenuItemActive : ''}`}
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      <span>{item.icon}</span>{item.label}
+                    </Link>
+                    {item.children?.map(child => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`${styles.moreMenuItem} ${pathname === child.href ? styles.moreMenuItemActive : ''}`}
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        <span>•</span>{child.label}
+                      </Link>
+                    ))}
+                  </React.Fragment>
                 );
               })}
 

@@ -13,6 +13,7 @@ import styles from './customize.module.css';
 
 /** Step labels */
 const STEP_LABELS = [
+  'Type',
   'Shape',
   'Dimensions',
   'Fill Type',
@@ -24,6 +25,24 @@ const STEP_LABELS = [
 
 /** Categories */
 const CATEGORIES = ['Indoor', 'Outdoor', 'RV', 'Boat', 'Pet Bed'];
+
+/** Product type image choices */
+const CUSHION_TYPES: ImgOpt[] = [
+  { key: 'Bed Cushion', label: 'Bed Cushion', img: '/images/calculator-types/bed-cushion.png' },
+  { key: 'Bench Window Back', label: 'Bench Window Back', img: '/images/calculator-types/bench-window-back.png' },
+  { key: 'Bench Window Seat', label: 'Bench Window Seat', img: '/images/calculator-types/bench-window-seat.png' },
+  { key: 'Bench w Back', label: 'Bench w Back', img: '/images/calculator-types/bench-w-back.png' },
+  { key: 'Bolster Pillow', label: 'Bolster Pillow', img: '/images/calculator-types/bolster-pillow.png' },
+  { key: 'Chair No Back', label: 'Chair, No Back', img: '/images/calculator-types/chair-no-back.png' },
+  { key: 'Chair', label: 'Chair', img: '/images/calculator-types/chair.png' },
+  { key: 'Chaise', label: 'Chaise', img: '/images/calculator-types/chaise.png' },
+  { key: 'Loveseat', label: 'Loveseat', img: '/images/calculator-types/loveseat.png' },
+  { key: 'Lumbar Pillow', label: 'Lumbar Pillow', img: '/images/calculator-types/lumbar-pillow.png' },
+  { key: 'Ottoman', label: 'Ottoman', img: '/images/calculator-types/ottoman.png' },
+  { key: 'Pet Bed', label: 'Pet Bed', img: '/images/calculator-types/pet-bed.png' },
+  { key: 'Sofa', label: 'Sofa', img: '/images/calculator-types/sofa.png' },
+  { key: 'Toss Pillow', label: 'Toss Pillow', img: '/images/calculator-types/toss-pillow.png' },
+];
 
 /** Shapes with display name (used in DB shape field) */
 type ShapeDef = { key: string; label: string; icon?: string };
@@ -37,6 +56,40 @@ const SHAPES: ShapeDef[] = [
   { key: 'Round', label: 'Round' },
   { key: 'Pillow', label: 'Pillow' },
 ];
+
+const STEP_TWO_SHAPES = [
+  'Squared Corners',
+  'Rounded Corners',
+  'Rounded Front',
+  'Rounded Back',
+  'Trapezoid',
+  'Rectangle 1 Break',
+  'Rectangle 2 Breaks',
+  'Rectangle 3 Breaks',
+  'Rounded Rectangle 1 Break',
+  'Rounded Rectangle 2 Breaks',
+  'Rounded Rectangle 3 Breaks',
+  'Rounded Top',
+  'Circle',
+  'Outer Bottom Corners Rounded',
+  'All Bottom Corners Rounded',
+  'Outer Top Corners Rounded',
+  'All Top Corners Rounded',
+  'Outer Corners Rounded',
+  'All Corners Rounded',
+  'Rounded Bottom',
+];
+
+function getCalculatorShape(selectedShape: string): string {
+  if (SHAPES.some(s => s.key === selectedShape)) return selectedShape;
+  if (selectedShape === 'Circle') return 'Round';
+  if (selectedShape === 'Trapezoid') return 'Trapezium';
+  return 'Box';
+}
+
+function getShapeDisplayLabel(selectedShape: string): string {
+  return SHAPES.find(s => s.key === selectedShape)?.label ?? selectedShape;
+}
 
 /** Dimension dropdown ranges  (start, end, step in inches) */
 const DIM_CONFIG = {
@@ -275,7 +328,8 @@ function FabricCard({
   const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const handleMouseEnter = (e: React.MouseEvent) => {
@@ -444,7 +498,11 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     }
   }, [step]);
 
-  // Step 1 – read ?type= and &shape= params
+  // Step 1 – Product type
+  const [cushionType, setCushionType] = useState(CUSHION_TYPES[0].key);
+  const [stepOneSelection, setStepOneSelection] = useState<'type' | 'shape'>('type');
+
+  // Step 2 – read ?type= and &shape= params
   const typeParam = searchParams.get('type');
   const shapeParam = searchParams.get('shape');
   const defaultCat = CATEGORIES.find(c => c.toLowerCase().replace(/\s+/g, '-') === typeParam?.toLowerCase()) ?? 'Indoor';
@@ -488,6 +546,36 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   // Step option images (admin-uploaded)
   const [stepImages, setStepImages] = useState<Record<string, string>>(initialStepImages);
   const [stepImagesRefreshKey, setStepImagesRefreshKey] = useState(0);
+  const [marginMultiplier, setMarginMultiplier] = useState(4.5);
+
+  const visibleCushionTypes = CUSHION_TYPES.filter(type =>
+    category === 'Pet Bed' ? type.key === 'Pet Bed' : type.key !== 'Pet Bed'
+  );
+  const visibleShapes = SHAPES.filter(s => {
+    if (s.key === 'Pillow' && category !== 'Pet Bed') return false;
+    if (category === 'Pet Bed') return ['Box', 'Round', 'Pillow'].includes(s.key);
+    return true;
+  });
+
+  const handleCategoryChange = (nextCategory: string) => {
+    setCategory(nextCategory);
+    setStepOneSelection('type');
+
+    if (nextCategory === 'Pet Bed') {
+      setCushionType('Pet Bed');
+      if (!['Box', 'Round', 'Pillow'].includes(shape)) {
+        setShape('Box');
+      }
+      return;
+    }
+
+    if (cushionType === 'Pet Bed') {
+      setCushionType(CUSHION_TYPES[0].key);
+    }
+    if (shape === 'Pillow') {
+      setShape('Rectangle');
+    }
+  };
 
   /* ── Fetch fabrics ── */
   useEffect(() => {
@@ -517,6 +605,19 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       .catch(() => { });
   }, [stepImagesRefreshKey]);
 
+  /* ── Fetch calculator margin ── */
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(data => {
+        const nextMargin = Number(data.calculatorMarginMultiplier ?? data.marginMultiplier);
+        if (Number.isFinite(nextMargin) && nextMargin > 0) {
+          setMarginMultiplier(nextMargin);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   // Clean up object URLs to prevent memory leaks
   useEffect(() => {
     return () => {
@@ -529,7 +630,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   }, []);
 
   /* ── Is throw pillow? ── */
-  const isThrowPillow = shape === 'Rectangle' || shape === 'Pillow';
+  const calculatorShape = getCalculatorShape(shape);
+  const shapeDisplayLabel = getShapeDisplayLabel(shape);
+  const isThrowPillow = calculatorShape === 'Rectangle' || calculatorShape === 'Pillow';
 
   /* ── Ensure fill is valid for shape ── */
   useEffect(() => {
@@ -538,19 +641,19 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
         setFill('Fiber Fill');
       }
     }
-  }, [shape, isThrowPillow]);
+  }, [calculatorShape, isThrowPillow]);
 
   /* ── PRICE COMPUTATION ── */
-  const lookupDim = calcMax(shape, dims); // Q8/Q4: max dimension used for lookups
-  const multiplierDim = calcMin(shape, dims); // R8/R4: min dimension used as multiplier
-  const fabricMeters = calcFabricMeters(shape, dims);
+  const lookupDim = calcMax(calculatorShape, dims); // Q8/Q4: max dimension used for lookups
+  const multiplierDim = calcMin(calculatorShape, dims); // R8/R4: min dimension used as multiplier
+  const fabricMeters = calcFabricMeters(calculatorShape, dims);
   const sewingCost = calcSewing(lookupDim, quantity);
-  const fiberfillCost = calcFiberfill(shape, fill, dims, lookupDim, multiplierDim, quantity);
+  const fiberfillCost = calcFiberfill(calculatorShape, fill, dims, lookupDim, multiplierDim, quantity);
   const pipingCost = calcPiping(piping, lookupDim, quantity);
   const tiesCost = calcTies(ties);
   const fabricCost = selectedFabric ? selectedFabric.price * fabricMeters * quantity : 0;
   const baseCostSum = sewingCost + fiberfillCost + pipingCost + fabricCost;
-  const totalPrice = (baseCostSum * 4.5) + tiesCost;
+  const totalPrice = (baseCostSum * marginMultiplier) + tiesCost;
 
   /* ── Active brand fabrics ── */
   const currentBrand = brands[brandIdx];
@@ -595,7 +698,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       setStepImagesRefreshKey(prev => prev + 1);
       // Trigger global refresh for all media components
       if (globalRefreshMedia) globalRefreshMedia();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Upload failed - revert to previous state
       URL.revokeObjectURL(objectUrl);
       setStepImages(prev => {
@@ -603,13 +706,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
         delete newState[normalizedKey];
         return newState;
       });
-      alert(`Upload failed: ${err.message}`);
+      alert(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
   /* ── Add to cart ── */
 
   const buildCartDetails = () => ({
+    type: cushionType,
     category,
     shape,
     fill,
@@ -622,7 +726,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   });
 
   const buildDimString = () => {
-    switch (shape) {
+    switch (calculatorShape) {
       case 'Rectangle':
       case 'Box':
       case 'Pillow':
@@ -652,7 +756,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
     addItem({
       id: cartId,
-      name: `Custom ${SHAPES.find(s => s.key === shape)?.label ?? shape} Cushion`,
+      name: `Custom ${cushionType}`,
       price: Math.max(totalPrice, 0),
       quantity,
       image: displayImage,
@@ -673,7 +777,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
     addItem({
       id: cartId,
-      name: `Custom ${SHAPES.find(s => s.key === shape)?.label ?? shape} Cushion`,
+      name: `Custom ${cushionType}`,
       price: Math.max(totalPrice, 0),
       quantity,
       image: displayImage,
@@ -684,7 +788,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   };
 
   const canGoNext = () => {
-    if (step === 4 && !selectedFabric) return false;
+    if (step === 5 && !selectedFabric) return false;
     return true;
   };
 
@@ -709,7 +813,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
               key={i}
               className={`${styles.progressStep} ${step === i + 1 ? styles.active : ''} ${step > i + 1 ? styles.done : ''}`}
               onClick={() => {
-                if (i + 1 > 4 && !selectedFabric) {
+                if (i + 1 > 5 && !selectedFabric) {
                   alert('Please select a fabric before proceeding.');
                   return;
                 }
@@ -726,19 +830,19 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
           {/* ── Left: step content ── */}
           <div className={styles.steps}>
 
-            {/* STEP 1 – Category & Shape */}
+            {/* STEP 1 – Type */}
             {step === 1 && (
               <div className={styles.stepContent}>
-                <h2>Type &amp; Shape</h2>
+                <h2>Type</h2>
 
                 <div className="form-group">
-                  <label className="form-label">Cushion Type</label>
+                  <label className="form-label">Cushion Category</label>
                   <div className={styles.optionGrid}>
                     {CATEGORIES.map(c => (
                       <button
                         key={c}
                         className={`${styles.optionBtn} ${category === c ? styles.selected : ''}`}
-                        onClick={() => setCategory(c)}
+                        onClick={() => handleCategoryChange(c)}
                       >
                         {c}
                       </button>
@@ -747,43 +851,88 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Shape</label>
-                  <div className={styles.shapeGrid}>
-                    {SHAPES.filter(s => {
-                      if (s.key === 'Pillow' && category !== 'Pet Bed') return false;
-                      if (category === 'Pet Bed') return ['Box', 'Round', 'Pillow'].includes(s.key);
-                      return true;
-                    }).map(s => {
-                      const imgKey = s.key.toLowerCase().replace(/ /g, '_');
-                      const imgUrl = stepImages[imgKey];
-                      return (
-                        <div key={s.key} className={styles.shapeCard} style={{ position: 'relative' }}>
-                          <ImgOptionCard
-                            opt={s}
-                            selected={shape === s.key}
-                            onClick={() => setShape(s.key)}
-                            stepImgUrl={imgUrl}
-                            isAdmin={isAdmin}
-                            onUpload={(f) => handleImageUpload(s.key, f)}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <label className="form-label">Cushion Type</label>
                 </div>
 
-                <button className="btn btn-primary" onClick={() => setStep(2)} id="step1-next">
-                  Next: Dimensions →
+                <div className={styles.imgOptGrid}>
+                  {visibleCushionTypes.map(opt => (
+                    <ImgOptionCard
+                      key={opt.key}
+                      opt={opt}
+                      selected={stepOneSelection === 'type' && cushionType === opt.key}
+                      onClick={() => {
+                        setCushionType(opt.key);
+                        setStepOneSelection('type');
+                      }}
+                    />
+                  ))}
+
+                  {visibleShapes.map(s => {
+                    const imgKey = s.key.toLowerCase().replace(/ /g, '_');
+                    const imgUrl = stepImages[imgKey];
+                    return (
+                      <div key={s.key} className={styles.shapeCard} style={{ position: 'relative' }}>
+                        <ImgOptionCard
+                          opt={s}
+                          selected={stepOneSelection === 'shape' && shape === s.key}
+                          onClick={() => {
+                            setShape(s.key);
+                            setStepOneSelection('shape');
+                          }}
+                          stepImgUrl={imgUrl}
+                          isAdmin={isAdmin}
+                          onUpload={(f) => handleImageUpload(s.key, f)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setStep(stepOneSelection === 'shape' ? 3 : 2)}
+                  id="step1-next"
+                >
+                  {stepOneSelection === 'shape' ? 'Next: Dimensions →' : 'Next: Shape →'}
                 </button>
               </div>
             )}
 
-            {/* STEP 2 – Dimensions (shape-specific) */}
+            {/* STEP 2 – Category & Shape */}
             {step === 2 && (
+              <div className={styles.stepContent}>
+                <h2>Shape</h2>
+
+                <div className="form-group">
+                  <label className="form-label">Shape</label>
+                  <div className={styles.imgOptGrid}>
+                    {STEP_TWO_SHAPES.map(shapeName => (
+                      <button
+                        key={shapeName}
+                        type="button"
+                        className={`${styles.imgOptionCard} ${shape === shapeName ? styles.imgOptionSelected : ''}`}
+                        onClick={() => setShape(shapeName)}
+                        style={{ minHeight: '92px', justifyContent: 'center', padding: '1rem' }}
+                      >
+                        <span className={styles.imgOptionLabel}>{shapeName}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.btnRow}>
+                  <button className="btn btn-outline" onClick={() => setStep(1)}>← Back</button>
+                  <button className="btn btn-primary" onClick={() => setStep(3)} id="step2-next">Next: Dimensions →</button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3 – Dimensions (shape-specific) */}
+            {step === 3 && (
               <div className={styles.stepContent}>
                 <h2 style={{ marginBottom: '0.5rem', marginTop: 0 }}>Dimensions</h2>
                 <p className={styles.stepSubtext} style={{ marginTop: 0, marginBottom: '1rem' }}>
-                  Configuring for: <strong style={{ color: 'var(--brand-primary)' }}>{SHAPES.find(s => s.key === shape)?.label}</strong>
+                  Configuring for: <strong style={{ color: 'var(--brand-primary)' }}>{shapeDisplayLabel}</strong>
                 </p>
                 {stepImages[shape.toLowerCase().replace(/ /g, '_')] && (
                   <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '0.5rem', marginBottom: '1.5rem' }}>
@@ -799,14 +948,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   {/* Common: quantity always shown */}
 
                   {/* Rectangle / Throw Pillow / Pillow */}
-                  {(shape === 'Rectangle' || shape === 'Box' || shape === 'Pillow') && (<>
+                  {(calculatorShape === 'Rectangle' || calculatorShape === 'Box' || calculatorShape === 'Pillow') && (<>
                     <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
                     <DimSelect field="width" value={dims.width} onChange={v => setDims(d => ({ ...d, width: v }))} />
                     <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
                   </>)}
 
                   {/* Trapezium */}
-                  {shape === 'Trapezium' && (<>
+                  {calculatorShape === 'Trapezium' && (<>
                     <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
                     <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
                     <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
@@ -814,7 +963,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   </>)}
 
                   {/* T Cushion */}
-                  {shape === 'T Cushion' && (<>
+                  {calculatorShape === 'T Cushion' && (<>
                     <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
                     <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
                     <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
@@ -823,7 +972,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   </>)}
 
                   {/* L Shape */}
-                  {shape === 'L Shape' && (<>
+                  {calculatorShape === 'L Shape' && (<>
                     <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
                     <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
                     <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
@@ -832,14 +981,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   </>)}
 
                   {/* Triangle */}
-                  {shape === 'Triangle' && (<>
+                  {calculatorShape === 'Triangle' && (<>
                     <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
                     <DimSelect field="width" value={dims.width} onChange={v => setDims(d => ({ ...d, width: v }))} />
                     <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
                   </>)}
 
                   {/* Round */}
-                  {shape === 'Round' && (<>
+                  {calculatorShape === 'Round' && (<>
                     <DimSelect field="diameter" value={dims.diameter} onChange={v => setDims(d => ({ ...d, diameter: v }))} />
                     <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
                   </>)}
@@ -875,14 +1024,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(1)}>← Back</button>
-                  <button className="btn btn-primary" onClick={() => setStep(3)} id="step2-next">Next: Fill Type →</button>
+                  <button className="btn btn-outline" onClick={() => setStep(2)}>← Back</button>
+                  <button className="btn btn-primary" onClick={() => setStep(4)} id="step3-next">Next: Fill Type →</button>
                 </div>
               </div>
             )}
 
-            {/* STEP 3 – Fill Type */}
-            {step === 3 && (
+            {/* STEP 4 – Fill Type */}
+            {step === 4 && (
               <div className={styles.stepContent}>
                 <h2>Fill Type</h2>
                 <div className={styles.imgOptGrid}>
@@ -907,14 +1056,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(2)}>← Back</button>
-                  <button className="btn btn-primary" onClick={() => setStep(4)} id="step3-next">Next: Fabric →</button>
+                  <button className="btn btn-outline" onClick={() => setStep(3)}>← Back</button>
+                  <button className="btn btn-primary" onClick={() => setStep(5)} id="step4-next">Next: Fabric →</button>
                 </div>
               </div>
             )}
 
-            {/* STEP 4 – Fabric Brand & Swatches */}
-            {step === 4 && (
+            {/* STEP 5 – Fabric Brand & Swatches */}
+            {step === 5 && (
               <div className={styles.stepContent}>
                 <h2>Select Fabric</h2>
 
@@ -970,7 +1119,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 )}
 
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(3)}>← Back</button>
+                  <button className="btn btn-outline" onClick={() => setStep(4)}>← Back</button>
                   <button
                     className="btn btn-primary"
                     onClick={() => {
@@ -978,9 +1127,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                         alert('Please select a fabric to continue.');
                         return;
                       }
-                      setStep(5);
+                      setStep(6);
                     }}
-                    id="step4-next"
+                    id="step5-next"
                   >
                     Next: Zipper →
                   </button>
@@ -988,8 +1137,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
               </div>
             )}
 
-            {/* STEP 5 – Zipper */}
-            {step === 5 && (
+            {/* STEP 6 – Zipper */}
+            {step === 6 && (
               <div className={styles.stepContent}>
                 <h2>Zipper Position</h2>
                 <div className={styles.imgOptGrid}>
@@ -1010,14 +1159,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   })}
                 </div>
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(4)}>← Back</button>
-                  <button className="btn btn-primary" onClick={() => setStep(6)} id="step5-next">Next: Piping →</button>
+                  <button className="btn btn-outline" onClick={() => setStep(5)}>← Back</button>
+                  <button className="btn btn-primary" onClick={() => setStep(7)} id="step6-next">Next: Piping →</button>
                 </div>
               </div>
             )}
 
-            {/* STEP 6 – Piping */}
-            {step === 6 && (
+            {/* STEP 7 – Piping */}
+            {step === 7 && (
               <div className={styles.stepContent}>
                 <h2>Piping</h2>
                 <div className={styles.imgOptGrid}>
@@ -1038,14 +1187,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   })}
                 </div>
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(5)}>← Back</button>
-                  <button className="btn btn-primary" onClick={() => setStep(7)} id="step6-next">Next: Ties →</button>
+                  <button className="btn btn-outline" onClick={() => setStep(6)}>← Back</button>
+                  <button className="btn btn-primary" onClick={() => setStep(8)} id="step7-next">Next: Ties →</button>
                 </div>
               </div>
             )}
 
-            {/* STEP 7 – Ties + Final CTA */}
-            {step === 7 && (
+            {/* STEP 8 – Ties + Final CTA */}
+            {step === 8 && (
               <div className={styles.stepContent}>
                 <h2>Ties</h2>
                 <div className={styles.imgOptGrid}>
@@ -1070,8 +1219,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 <div className={styles.summary}>
                   <h3>Order Summary</h3>
                   <div className={styles.summaryRows}>
+                    <div><span>Type</span><strong>{cushionType}</strong></div>
                     <div><span>Category</span><strong>{category}</strong></div>
-                    <div><span>Shape</span><strong>{SHAPES.find(s => s.key === shape)?.label}</strong></div>
+                    <div><span>Shape</span><strong>{shapeDisplayLabel}</strong></div>
                     <div><span>Dimensions</span><strong>{buildDimString()}</strong></div>
                     {/* <div><span>Fabric Meters</span><strong>{fabricMeters.toFixed(4)} m</strong></div> */}
                     <div><span>Fill</span><strong>{fill}</strong></div>
@@ -1084,7 +1234,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(6)}>← Back</button>
+                  <button className="btn btn-outline" onClick={() => setStep(7)}>← Back</button>
                 </div>
               </div>
             )}
@@ -1175,7 +1325,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
               <img src="/images/placeholder-brand.webp" alt="Brand Partner 3" style={{ height: '28px', width: 'auto', objectFit: 'contain', opacity: 0.8 }} /> */}
             </div>
 
-            {step === 7 && (
+            {step === 8 && (
               <div className={styles.priceCTAs}>
                 <button className="btn btn-accent" style={{ width: '100%' }} onClick={handleAddToCart}>
                   Add to Cart

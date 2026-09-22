@@ -4,6 +4,30 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { OrderStatus } from '@prisma/client';
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSession(req);
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const resolvedParams = await params;
+    const order = await prisma.order.findUnique({
+      where: { id: resolvedParams.id },
+      include: { user: true },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(order);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch order';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSession(req);
@@ -19,10 +43,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     const order = await prisma.order.update({
       where: { id: resolvedParams.id },
-      data: { status: status as any },
+      data: { status: status as OrderStatus },
     });
     return NextResponse.json(order);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update order';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

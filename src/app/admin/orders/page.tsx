@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useSite } from '@/context/SiteContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getOrderedCustomOptions } from '@/lib/format-options';
 import styles from '../admin.module.css';
 import AdminSidebar from '@/components/AdminSidebar';
-import { downloadInvoice, downloadOrderDetails } from '@/lib/invoice';
-
-
 
 const STATUS_OPTIONS = [
   'ORDER_RECEIVED',
@@ -43,65 +38,78 @@ const statusColor: Record<string, { bg: string; color: string }> = {
   OUT_FOR_DELIVERY: { bg: '#fefce8', color: '#ca8a04' },
   DELIVERED: { bg: '#f0fdf4', color: '#10b981' },
   CANCELLED: { bg: '#fef2f2', color: '#ef4444' },
-  // legacy fallbacks
   PENDING: { bg: '#fff7ed', color: '#f59e0b' },
   SHIPPED: { bg: '#f5f3ff', color: '#8b5cf6' },
 };
 
+const EditIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
+type AdminOrderItem = {
+  quantity: number;
+};
+
+type AdminOrder = {
+  id: string;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+  } | null;
+  createdAt: string;
+  status: string;
+  total: number;
+  paymentMethod?: string | null;
+  items: AdminOrderItem[];
+};
+
 export default function AdminOrdersPage() {
-  const { user, logout, loading } = useAuth();
-  const { logoUrl, siteName } = useSite();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [filter, setFilter] = useState('ALL');
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [paymentFilter, setPaymentFilter] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
+
+  const fetchOrders = useCallback(() => {
+    setDataLoading(true);
+    fetch('/api/orders')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setOrders(data);
+      })
+      .catch(console.error)
+      .finally(() => setDataLoading(false));
+  }, []);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'ADMIN')) {
       router.replace('/account');
     } else if (user?.role === 'ADMIN') {
-      fetchOrders();
+      const frame = requestAnimationFrame(fetchOrders);
+      return () => cancelAnimationFrame(frame);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, fetchOrders]);
 
-  const fetchOrders = () => {
-    fetch('/api/orders')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setOrders(data);
-        setDataLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setDataLoading(false);
-      });
-  };
+  const filtered = orders.filter(order => {
+    const matchesStatus = filter === 'ALL' || order.status === filter;
+    const matchesPayment = paymentFilter === 'ALL' || (order.paymentMethod || 'COD') === paymentFilter;
+    const search = searchTerm.trim().toLowerCase();
+    const matchesSearch = !search
+      || order.id.toLowerCase().includes(search)
+      || order.user?.name?.toLowerCase().includes(search)
+      || order.user?.email?.toLowerCase().includes(search);
 
-  const updateStatus = async (orderId: string, status: string) => {
-    setUpdating(orderId);
-    try {
-      const res = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      } else {
-        alert(data.error || 'Failed to update status');
-      }
-    } catch {
-      alert('Error updating status');
-    } finally {
-      setUpdating(null);
-    }
-  };
+    return matchesStatus && matchesPayment && matchesSearch;
+  });
 
-  const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter);
-
-  if (loading || !user || user.role !== 'ADMIN') return <div className={styles.loading}><div className={styles.spinner} /></div>;
+  if (loading || !user || user.role !== 'ADMIN') {
+    return <div className={styles.loading}><div className={styles.spinner} /></div>;
+  }
 
   return (
     <div className={styles.layout}>
@@ -116,30 +124,37 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* Filter tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-          {['ALL', ...STATUS_OPTIONS].map(s => (
-            <button key={s} onClick={() => setFilter(s)}
-              style={{
-                padding: '0.4rem 1rem',
-                borderRadius: '999px',
-                border: '1px solid',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                transition: 'all 0.2s',
-                background: filter === s ? 'var(--brand-primary)' : 'white',
-                color: filter === s ? 'white' : 'var(--text-secondary)',
-                borderColor: filter === s ? 'var(--brand-primary)' : 'var(--gray-200)',
-              }}>
-              {s === 'ALL' ? 'ALL' : (STATUS_LABELS[s] || s)}
-            </button>
-          ))}
+        <div className="card" style={{ padding: '1.25rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <input
+              className="form-control"
+              type="search"
+              placeholder="Search order ID, customer, or email..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="form-control"
+              value={paymentFilter}
+              onChange={e => setPaymentFilter(e.target.value)}
+            >
+              <option value="ALL">All payments</option>
+              <option value="COD">COD</option>
+              <option value="STRIPE">Stripe</option>
+            </select>
+            <select
+              className="form-control"
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+            >
+              <option value="ALL">All statuses</option>
+              {STATUS_OPTIONS.map(s => (
+                <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Orders list */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {dataLoading ? (
             <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -150,24 +165,28 @@ export default function AdminOrdersPage() {
               No orders found{filter !== 'ALL' ? ` with status "${filter}"` : ''}.
             </div>
           ) : null}
+
           {filtered.map(order => {
             const sc = statusColor[order.status] ?? { bg: '#f3f4f6', color: '#6b7280' };
+            const itemCount = order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+
             return (
               <div key={order.id} className="card" style={{ padding: '1.75rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.25rem' }}>
                       Order #{order.id.slice(-8).toUpperCase()}
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       <strong>{order.user?.name ?? order.user?.email ?? 'Unknown User'}</strong>
-                      {' · '}{order.user?.email}
-                      {' · '}{new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {' - '}{order.user?.email}
+                      {' - '}{new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {' - '}{itemCount} item{itemCount !== 1 ? 's' : ''}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                     <span style={{ background: sc.bg, color: sc.color, padding: '0.35rem 0.9rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                      {order.status}
+                      {STATUS_LABELS[order.status] || order.status}
                     </span>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 800, color: 'var(--brand-secondary)', fontSize: '1.25rem' }}>
@@ -177,150 +196,14 @@ export default function AdminOrdersPage() {
                         {order.paymentMethod || 'COD'}
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Items with images */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--gray-100)' }}>
-                  {(order.items as any[])?.map((item: any, idx: number) => (
-                    <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'center', padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)' }}>
-                      <div style={{ width: '56px', height: '56px', flexShrink: 0, borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                        {item.image ? <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (item.category === 'Non-Customizable' ? '🛍️' : '🛋️')}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.category ?? 'Custom'} · Qty: {item.quantity} · ${item.price?.toFixed(2)} each</div>
-                        {item.customOptions && Object.keys(item.customOptions).length > 0 && (
-                          <div style={{ fontSize: '0.8rem', color: '#666', background: '#f5f5f5', padding: '0.5rem', borderRadius: '4px', marginTop: '0.5rem' }}>
-                            <span style={{ fontWeight: 600 }}>Details: </span>
-                            {getOrderedCustomOptions(item.customOptions)
-                              .map(([k,v], i, arr) => (
-                                <span key={k}>
-                                  {k.charAt(0).toUpperCase() + k.slice(1)}: {v as string}{i < arr.length - 1 ? ' | ' : ''}
-                                </span>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                      <span style={{ fontWeight: 800, color: 'var(--brand-secondary)', whiteSpace: 'nowrap' }}>${(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                  ))}
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                    <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        <span>Delivery Charge</span>
-                        <span>${(order.deliveryCharge || 0).toFixed(2)}</span>
-                      </div>
-                      {(() => {
-                        const subtotal = (order.items as any[])?.reduce((acc: number, val: any) => acc + (val.price * val.quantity), 0) || 0;
-                        const calculatedTotal = subtotal + (order.deliveryCharge || 0);
-                        const discount = calculatedTotal - order.total;
-                        if (discount > 0.01) {
-                          let label = 'Discount Applied';
-                          if (order.notes && order.notes.includes('Promo Code Applied')) {
-                            const match = order.notes.match(/\(([^)]+)\)/);
-                            if (match && match[1] && !match[1].startsWith('Stripe Discount')) {
-                              label = `Discount (${match[1]})`;
-                            }
-                          }
-                          return (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>
-                              <span>{label}</span>
-                              <span>-${discount.toFixed(2)}</span>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Shipping + Billing Addresses */}
-                {order.shippingAddr && (() => {
-                  const ship = order.shippingAddr.shipping ?? order.shippingAddr;
-                  const bill = order.shippingAddr.billing;
-                  // Compare every field — any difference shows the billing address separately
-                  const billDiff = bill && JSON.stringify(bill) !== JSON.stringify(ship);
-                  return (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.25rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--gray-100)' }}>
-                      <div style={{ flex: '1 1 250px' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>🚚 Shipping Address</div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                          <strong>{ship.fullName}</strong><br />
-                          {ship.address}<br />
-                          {ship.city}{ship.state ? `, ${ship.state}` : ''} {ship.zip}<br />
-                          {ship.country}<br />
-                          {ship.phone && <span>📞 {ship.phone}<br /></span>}
-                          {ship.email && <span>✉️ {ship.email}</span>}
-                        </div>
-                      </div>
-                      <div style={{ flex: '1 1 250px' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>💳 Billing Address</div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                          {billDiff ? (
-                            <>
-                              <strong>{bill.fullName}</strong><br />
-                              {bill.address}<br />
-                              {bill.city}{bill.state ? `, ${bill.state}` : ''} {bill.zip}<br />
-                              {bill.country}
-                            </>
-                          ) : (
-                            <em style={{ color: 'var(--text-muted)' }}>Same as shipping address</em>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Status update */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  {order.status !== 'DELIVERED' ? (
-                    <>
-                      <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Update Status:</label>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {STATUS_OPTIONS.filter(s => s !== order.status).map(s => {
-                          const c = statusColor[s] || { bg: '#f3f4f6', color: '#6b7280' };
-                          return (
-                            <button key={s} onClick={() => updateStatus(order.id, s)}
-                              disabled={updating === order.id}
-                              style={{
-                                padding: '0.3rem 0.75rem',
-                                borderRadius: '999px',
-                                border: `1px solid ${c.color}`,
-                                background: 'white',
-                                color: c.color,
-                                fontSize: '0.78rem',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                opacity: updating === order.id ? 0.5 : 1,
-                                transition: 'all 0.2s',
-                              }}>
-                              → {STATUS_LABELS[s] || s}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      🔒 Status Locked (Delivered)
-                    </span>
-                  )}
-                  {order.notes && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>📝 {order.notes}</span>}
-
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                      Paid via {order.paymentMethod || 'COD'}
-                    </div>
-                    <button onClick={() => downloadOrderDetails(order, logoUrl, siteName)} className="btn btn-outline btn-sm">
-                      📋 Order Details
-                    </button>
-                    <button onClick={() => downloadInvoice(order, logoUrl, siteName)} className="btn btn-outline btn-sm">
-                      📄 Invoice
-                    </button>
+                    <Link
+                      href={`/admin/orders/${order.id}/edit`}
+                      className="btn btn-outline btn-sm"
+                      title="Edit order"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      <EditIcon /> Edit
+                    </Link>
                   </div>
                 </div>
               </div>
