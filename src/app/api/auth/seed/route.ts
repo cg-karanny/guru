@@ -12,7 +12,7 @@ export async function GET() {
       update: { role: 'ADMIN', password: adminHashed },
       create: {
         name: 'Admin User',
-        email: 'Testpassword@123',
+        email: 'admin.soften@gmail.com',
         password: adminHashed,
         role: 'ADMIN',
       },
