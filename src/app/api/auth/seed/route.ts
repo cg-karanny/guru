@@ -4,26 +4,26 @@ import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
-    const adminHashed = await bcrypt.hash('adminpassword123', 12);
-    const userHashed = await bcrypt.hash('userpassword123', 12);
+    const adminHashed = await bcrypt.hash('Testpassword@123', 12);
+    const userHashed = await bcrypt.hash('Testpassword@123', 12);
 
     await prisma.user.upsert({
-      where: { email: 'admin@example.com' },
+      where: { email: 'admin.soften@gmail.com' },
       update: { role: 'ADMIN', password: adminHashed },
       create: {
         name: 'Admin User',
-        email: 'admin@example.com',
+        email: 'Testpassword@123',
         password: adminHashed,
         role: 'ADMIN',
       },
     });
 
     await prisma.user.upsert({
-      where: { email: 'user@example.com' },
+      where: { email: 'paramveer.soften@gmail.com' },
       update: { role: 'USER', password: userHashed },
       create: {
         name: 'Sample User',
-        email: 'user@example.com',
+        email: 'paramveer.soften@gmail.com',
         password: userHashed,
         role: 'USER',
       },
