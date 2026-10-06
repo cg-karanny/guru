@@ -24,7 +24,7 @@ interface FabricBrand {
 }
 
 export default function AdminFabricsPage() {
-  const { user, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   const [brands, setBrands] = useState<FabricBrand[]>([]);
@@ -40,26 +40,8 @@ export default function AdminFabricsPage() {
   const [uploadMsg, setUploadMsg] = useState('');
   const [uploadErr, setUploadErr] = useState('');
 
-  // Shape image upload
-  const [shapeKey, setShapeKey] = useState('Rectangle');
-  const [shapeFile, setShapeFile] = useState<File | null>(null);
-  const [shapeUploading, setShapeUploading] = useState(false);
-  const [shapeMsg, setShapeMsg] = useState('');
-
   const csvInputRef = useRef<HTMLInputElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
-  const shapeImgRef = useRef<HTMLInputElement>(null);
-
-  const SHAPE_KEYS = [
-    { key: 'Rectangle', label: 'Throw Pillow' },
-    { key: 'Box', label: 'Rectangle' },
-    { key: 'Trapezium', label: 'Trapezium' },
-    { key: 'T Cushion', label: 'T Cushion' },
-    { key: 'L Shape', label: 'L Shape' },
-    { key: 'Triangle', label: 'Triangle' },
-    { key: 'Round', label: 'Round' },
-    { key: 'Pillow', label: 'Pillow' }
-  ];
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'ADMIN')) {
@@ -106,38 +88,10 @@ export default function AdminFabricsPage() {
       if (csvInputRef.current) csvInputRef.current.value = '';
       if (imgInputRef.current) imgInputRef.current.value = '';
       loadBrands();
-    } catch (err: any) {
-      setUploadErr(err.message);
+    } catch (err) {
+      setUploadErr(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleShapeUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!shapeKey || !shapeFile) {
-      setShapeMsg('❌ Select a shape and an image file.');
-      return;
-    }
-    setShapeUploading(true);
-    setShapeMsg('');
-
-    const fd = new FormData();
-    fd.append('file', shapeFile);
-    fd.append('key', `shape_${shapeKey.toLowerCase().replace(/ /g, '_')}`);
-    fd.append('type', 'image');
-
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
-      setShapeMsg(`✅ Shape image uploaded for ${shapeKey}`);
-      setShapeFile(null);
-      if (shapeImgRef.current) shapeImgRef.current.value = '';
-    } catch (err: any) {
-      setShapeMsg(`❌ ${err.message}`);
-    } finally {
-      setShapeUploading(false);
     }
   };
 
@@ -170,54 +124,6 @@ export default function AdminFabricsPage() {
           <h1>Fabric Management</h1>
           <Link href="/admin" className="btn btn-outline btn-sm">← Dashboard</Link>
         </div>
-
-        {/* ── Shape Image Upload ─────────────────────── */}
-        <section style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.15rem', marginBottom: '.5rem', color: 'var(--brand-primary)' }}>
-            🔷 Shape Images (Customize Page Step 1)
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '.875rem', marginBottom: '1rem' }}>
-            Upload one image per shape. It will appear in the shape selector for customers.
-          </p>
-          <div className="card" style={{ padding: '1.5rem' }}>
-            <form onSubmit={handleShapeUpload}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                  <label className="form-label">Shape</label>
-                  <select className="form-control" value={shapeKey} onChange={e => setShapeKey(e.target.value)}>
-                    {SHAPE_KEYS.map(k => <option key={k.key} value={k.key}>{k.label}</option>)}
-                  </select>
-                </div>
-                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                  <label className="form-label">Image File</label>
-                  <input
-                    ref={shapeImgRef}
-                    type="file"
-                    accept="image/*"
-                    className="form-control"
-                    onChange={e => setShapeFile(e.target.files?.[0] ?? null)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={shapeUploading}
-                  style={{ flex: '1 1 auto', whiteSpace: 'nowrap' }}
-                >
-                  {shapeUploading ? 'Uploading…' : 'Upload Image'}
-                </button>
-              </div>
-              {shapeMsg && (
-                <div
-                  className={`alert ${shapeMsg.startsWith('✅') ? 'alert-success' : 'alert-error'}`}
-                  style={{ marginTop: '.75rem' }}
-                >
-                  {shapeMsg}
-                </div>
-              )}
-            </form>
-          </div>
-        </section>
 
         {/* ── Bulk Fabric Upload ─────────────────────── */}
         <section style={{ marginBottom: '2.5rem' }}>

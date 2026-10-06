@@ -19,6 +19,7 @@ interface CartContextType {
   count: number;
   total: number;
   addItem: (item: CartItem) => void;
+  updateItem: (id: string, item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
@@ -164,11 +165,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           price: item.price,
           image: item.image,
           category: item.category,
+          customOptions: item.customOptions,
           stock: item.stock
         } : i);
       }
       return [...prev, item];
     });
+  }, []);
+
+  const updateItem = useCallback((id: string, item: CartItem) => {
+    setItems(prev => prev.map(existing => existing.id === id ? item : existing));
   }, []);
 
   const removeItem = useCallback((id: string) => {
@@ -192,7 +198,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, count, total, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ items, count, total, addItem, updateItem, removeItem, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );

@@ -178,7 +178,6 @@ export default function AccountPageClient() {
               </label>
             </div>
           )}
-
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading} id="account-submit">
             {loading ? (mode === 'login' ? 'Signing in…' : (showOtp ? 'Verifying…' : 'Sending Code…')) : (mode === 'login' ? 'Log In' : (showOtp ? 'Verify Code' : 'Create Account'))}
           </button>
