@@ -45,7 +45,7 @@ const CUSHION_TYPES: ImgOpt[] = [
 ];
 
 /** Shapes with display name (used in DB shape field) */
-type ShapeDef = { key: string; label: string; icon?: string };
+type ShapeDef = { key: string; label: string; img?: string; icon?: string };
 const SHAPES: ShapeDef[] = [
   { key: 'Rectangle', label: 'Throw Pillow' },
   { key: 'Box', label: 'Rectangle' },
@@ -57,28 +57,48 @@ const SHAPES: ShapeDef[] = [
   { key: 'Pillow', label: 'Pillow' },
 ];
 
-const STEP_TWO_SHAPES = [
-  'Squared Corners',
-  'Rounded Corners',
-  'Rounded Front',
-  'Rounded Back',
-  'Trapezoid',
-  'Rectangle 1 Break',
-  'Rectangle 2 Breaks',
-  'Rectangle 3 Breaks',
-  'Rounded Rectangle 1 Break',
-  'Rounded Rectangle 2 Breaks',
-  'Rounded Rectangle 3 Breaks',
-  'Rounded Top',
-  'Circle',
-  'Outer Bottom Corners Rounded',
-  'All Bottom Corners Rounded',
-  'Outer Top Corners Rounded',
-  'All Top Corners Rounded',
-  'Outer Corners Rounded',
-  'All Corners Rounded',
-  'Rounded Bottom',
+const STEP_TWO_SHAPES: ShapeDef[] = [
+  { key: 'Squared Corners', label: 'Squared Corners', img: '/images/shapes/Squared Corners.png' },
+  { key: 'Squared Corners 2', label: 'Squared Corners 2', img: '/images/shapes/Squared Corners (2).png' },
+  { key: 'Squared Corners 3', label: 'Squared Corners 3', img: '/images/shapes/Squared Corners (3).png' },
+  { key: 'Rounded Corners', label: 'Rounded Corners', img: '/images/shapes/Rounded Corners.png' },
+  { key: 'Rounded Front', label: 'Rounded Front', img: '/images/shapes/Rounded Front.png' },
+  { key: 'Rounded Back', label: 'Rounded Back', img: '/images/shapes/Rounded Back.png' },
+  { key: 'Trapezoid', label: 'Trapezoid', img: '/images/shapes/Trapezoid.png' },
+  { key: 'Rectangle 1 Break', label: 'Rectangle 1 Break', img: '/images/shapes/Rectangle 1 Break.png' },
+  { key: 'Rectangle 2 Breaks', label: 'Rectangle 2 Breaks', img: '/images/shapes/Rectangle 2 Breaks.png' },
+  { key: 'Rectangle 3 Breaks', label: 'Rectangle 3 Breaks', img: '/images/shapes/Rectangle 3 Breaks.png' },
+  { key: 'Rounded Rectangle 1 Break', label: 'Rounded Rectangle 1 Break', img: '/images/shapes/Rounded Rectangle 1 Break.png' },
+  { key: 'Rounded Rectangle 2 Breaks', label: 'Rounded Rectangle 2 Breaks', img: '/images/shapes/Rounded Rectangle 2 Breaks.png' },
+  { key: 'Rounded Rectangle 3 Breaks', label: 'Rounded Rectangle 3 Breaks', img: '/images/shapes/Rounded Rectangle 3 Breaks.png' },
+  { key: 'Circle', label: 'Circle', img: '/images/shapes/Circle.png' },
+  { key: 'Outer Bottom Corners Rounded', label: 'Outer Bottom Corners Rounded', img: '/images/shapes/Outer Bottom Corners Rounded.png' },
+  { key: 'All Bottom Corners Rounded', label: 'All Bottom Corners Rounded', img: '/images/shapes/All Bottom Corners Rounded.png' },
+  { key: 'Outer Top Corners Rounded', label: 'Outer Top Corners Rounded', img: '/images/shapes/Outer Top Corners Rounded.png' },
+  { key: 'All Top Corners Rounded', label: 'All Top Corners Rounded', img: '/images/shapes/All Top Corners Rounded.png' },
+  { key: 'Outer Corners Rounded', label: 'Outer Corners Rounded', img: '/images/shapes/Outer Corners Rounded.png' },
+  { key: 'All Corners Rounded', label: 'All Corners Rounded', img: '/images/shapes/All Corners Rounded.png' },
+  { key: '1 Seat 1 Back', label: '1 Seat 1 Back', img: '/images/shapes/1 Seat 1 Back.png' },
+  { key: '1 Seat 2 Back', label: '1 Seat 2 Back', img: '/images/shapes/1 Seat 2 Back.png' },
+  { key: '2 Seat 1 Back', label: '2 Seat 1 Back', img: '/images/shapes/2 Seat 1 Back.png' },
+  { key: '2 Seat 2 Back', label: '2 Seat 2 Back', img: '/images/shapes/2 Seat 2 Back.png' },
+  { key: '3 Seat 1 Back', label: '3 Seat 1 Back', img: '/images/shapes/3 Seat 1 Back.png' },
+  { key: '3 Seat 3 Back', label: '3 Seat 3 Back', img: '/images/shapes/3 Seat 3 Back.png' },
+  { key: '2 Outer Bottom Corners Rounded', label: '2 Outer Bottom Corners Rounded', img: '/images/shapes/2 Outer Bottom Corners Rounded.png' },
+  { key: '2 Outer Corners Rounded', label: '2 Outer Corners Rounded', img: '/images/shapes/2 Outer Corners Rounded.png' },
+  { key: '2 Outer Top Corners Rounded', label: '2 Outer Top Corners Rounded', img: '/images/shapes/2 Outer Top Corners Rounded.png' },
+  { key: '3 All Front Corners Rounded', label: '3 All Front Corners Rounded', img: '/images/shapes/3 AAll Front Corners Rounded.png' },
+  { key: '3 All Back Corners Rounded', label: '3 All Back Corners Rounded', img: '/images/shapes/3 All Back Corners Rounded.png' },
+  { key: '3 All Bottom Corners Rounded', label: '3 All Bottom Corners Rounded', img: '/images/shapes/3 All Bottom Corners Rounded.png' },
+  { key: '3 All Corners Rounded', label: '3 All Corners Rounded', img: '/images/shapes/3 All Corners Rounded.png' },
+  { key: '3 Outer Back Corners Rounded', label: '3 Outer Back Corners Rounded', img: '/images/shapes/3 Outer Back Corners Rounded.png' },
+  { key: '3 Outer Front Corners Rounded', label: '3 Outer Front Corners Rounded', img: '/images/shapes/3 Outer Front Corners Rounded.png' },
+  { key: '3 Outer Top Corners Rounded', label: '3 Outer Top Corners Rounded', img: '/images/shapes/3 Outer Top Corners Rounded.png' },
 ];
+
+function optionKey(value: string) {
+  return value.toLowerCase().replace(/ /g, '_');
+}
 
 function getCalculatorShape(selectedShape: string): string {
   if (SHAPES.some(s => s.key === selectedShape)) return selectedShape;
@@ -89,6 +109,35 @@ function getCalculatorShape(selectedShape: string): string {
 
 function getShapeDisplayLabel(selectedShape: string): string {
   return SHAPES.find(s => s.key === selectedShape)?.label ?? selectedShape;
+}
+
+function parseDimensionValue(dimensions: string, label: string): number | null {
+  const match = dimensions.match(new RegExp(`${label}:\\s*([0-9.]+)`, 'i'));
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function parseCartDimensions(dimensions?: string): Partial<Dims> {
+  if (!dimensions) return {};
+
+  const parsed: Partial<Dims> = {};
+  const fields: Array<[keyof Dims, string]> = [
+    ['length', 'Length'],
+    ['width', 'Width'],
+    ['bottomWidth', 'Bottom Width'],
+    ['topWidth', 'Top Width'],
+    ['thickness', 'Thickness'],
+    ['ear', 'Ear'],
+    ['diameter', 'Diameter'],
+  ];
+
+  fields.forEach(([field, label]) => {
+    const value = parseDimensionValue(dimensions, label);
+    if (value !== null) parsed[field] = value;
+  });
+
+  return parsed;
 }
 
 /** Dimension dropdown ranges  (start, end, step in inches) */
@@ -485,7 +534,9 @@ function ImgOptionCard({
 export default function CustomizePage({ initialStepImages = {} }: { initialStepImages?: Record<string, string> }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { addItem } = useCart();
+  const { items, addItem, updateItem } = useCart();
+  const editItemId = searchParams.get('edit');
+  const editingCartItem = editItemId ? items.find(item => item.id === editItemId && item.category === 'Custom') : undefined;
 
   /* ── State ── */
   const [step, setStep] = useState(1);
@@ -507,6 +558,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const shapeParam = searchParams.get('shape');
   const defaultCat = CATEGORIES.find(c => c.toLowerCase().replace(/\s+/g, '-') === typeParam?.toLowerCase()) ?? 'Indoor';
   const defaultShape = SHAPES.find(s =>
+    s.key.toLowerCase().replace(/\s+/g, '-') === shapeParam?.toLowerCase() ||
+    s.label.toLowerCase().replace(/\s+/g, '-') === shapeParam?.toLowerCase()
+  )?.key ?? STEP_TWO_SHAPES.find(s =>
     s.key.toLowerCase().replace(/\s+/g, '-') === shapeParam?.toLowerCase() ||
     s.label.toLowerCase().replace(/\s+/g, '-') === shapeParam?.toLowerCase()
   )?.key ?? 'Rectangle';
@@ -547,6 +601,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const [stepImages, setStepImages] = useState<Record<string, string>>(initialStepImages);
   const [stepImagesRefreshKey, setStepImagesRefreshKey] = useState(0);
   const [marginMultiplier, setMarginMultiplier] = useState(4.5);
+  const [editLoaded, setEditLoaded] = useState(false);
 
   const visibleCushionTypes = CUSHION_TYPES.filter(type =>
     category === 'Pet Bed' ? type.key === 'Pet Bed' : type.key !== 'Pet Bed'
@@ -556,6 +611,42 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     if (category === 'Pet Bed') return ['Box', 'Round', 'Pillow'].includes(s.key);
     return true;
   });
+
+  useEffect(() => {
+    if (!editingCartItem || editLoaded) return;
+    const options = editingCartItem.customOptions;
+    if (!options) return;
+
+    if (options.type) setCushionType(options.type);
+    if (options.category) setCategory(options.category);
+    if (options.shape) {
+      setShape(options.shape);
+      setStepOneSelection(SHAPES.some(s => s.key === options.shape) ? 'shape' : 'type');
+    }
+    if (options.fill) setFill(options.fill);
+    if (options.zipper) setZipper(options.zipper);
+    if (options.piping) setPiping(options.piping);
+    if (options.ties) setTies(options.ties);
+    if (editingCartItem.quantity) setQuantity(editingCartItem.quantity);
+
+    setDims(current => ({ ...current, ...parseCartDimensions(options.dimensions) }));
+    setEditLoaded(true);
+  }, [editingCartItem, editLoaded]);
+
+  useEffect(() => {
+    if (!editingCartItem || !editLoaded || brands.length === 0) return;
+    const fabricName = editingCartItem.customOptions?.fabric;
+    if (!fabricName || fabricName === 'No fabric') return;
+
+    for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
+      const fabric = brands[brandIndex].fabrics.find(f => f.label === fabricName);
+      if (fabric) {
+        setBrandIdx(brandIndex);
+        setSelectedFabric(fabric);
+        return;
+      }
+    }
+  }, [brands, editingCartItem, editLoaded]);
 
   const handleCategoryChange = (nextCategory: string) => {
     setCategory(nextCategory);
@@ -662,7 +753,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const handleImageUpload = async (key: string, file: File) => {
     // INSTANT UPDATE: Create object URL immediately for instant preview
     const objectUrl = URL.createObjectURL(file);
-    const normalizedKey = key.toLowerCase().replace(/ /g, '_');
+    const normalizedKey = optionKey(key);
 
     // Show image immediately
     setStepImages(prev => ({
@@ -750,11 +841,11 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       alert('Please select a fabric before adding to cart.');
       return;
     }
-    const cartId = `custom-${Date.now()}`;
-    const shapeImgKey = shape.toLowerCase().replace(/ /g, '_');
+    const cartId = editingCartItem?.id ?? `custom-${Date.now()}`;
+    const shapeImgKey = optionKey(shape);
     const displayImage = stepImages[shapeImgKey] || '';
 
-    addItem({
+    const nextItem = {
       id: cartId,
       name: `Custom ${cushionType}`,
       price: Math.max(totalPrice, 0),
@@ -762,7 +853,13 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       image: displayImage,
       category: 'Custom',
       customOptions: buildCartDetails() as Record<string, string>,
-    });
+    };
+
+    if (editingCartItem) {
+      updateItem(editingCartItem.id, nextItem);
+    } else {
+      addItem(nextItem);
+    }
     router.push('/cart');
   };
 
@@ -772,7 +869,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       return;
     }
     const cartId = `custom-${Date.now()}`;
-    const shapeImgKey = shape.toLowerCase().replace(/ /g, '_');
+    const shapeImgKey = optionKey(shape);
     const displayImage = stepImages[shapeImgKey] || '';
 
     addItem({
@@ -868,7 +965,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   ))}
 
                   {visibleShapes.map(s => {
-                    const imgKey = s.key.toLowerCase().replace(/ /g, '_');
+                    const imgKey = optionKey(s.key);
                     const imgUrl = stepImages[imgKey];
                     return (
                       <div key={s.key} className={styles.shapeCard} style={{ position: 'relative' }}>
@@ -906,16 +1003,13 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 <div className="form-group">
                   <label className="form-label">Shape</label>
                   <div className={styles.imgOptGrid}>
-                    {STEP_TWO_SHAPES.map(shapeName => (
-                      <button
-                        key={shapeName}
-                        type="button"
-                        className={`${styles.imgOptionCard} ${shape === shapeName ? styles.imgOptionSelected : ''}`}
-                        onClick={() => setShape(shapeName)}
-                        style={{ minHeight: '92px', justifyContent: 'center', padding: '1rem' }}
-                      >
-                        <span className={styles.imgOptionLabel}>{shapeName}</span>
-                      </button>
+                    {STEP_TWO_SHAPES.map(shapeOption => (
+                      <ImgOptionCard
+                        key={shapeOption.key}
+                        opt={shapeOption}
+                        selected={shape === shapeOption.key}
+                        onClick={() => setShape(shapeOption.key)}
+                      />
                     ))}
                   </div>
                 </div>
@@ -934,10 +1028,10 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 <p className={styles.stepSubtext} style={{ marginTop: 0, marginBottom: '1rem' }}>
                   Configuring for: <strong style={{ color: 'var(--brand-primary)' }}>{shapeDisplayLabel}</strong>
                 </p>
-                {stepImages[shape.toLowerCase().replace(/ /g, '_')] && (
+                {stepImages[optionKey(shape)] && (
                   <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '0.5rem', marginBottom: '1.5rem' }}>
                     <img
-                      src={stepImages[shape.toLowerCase().replace(/ /g, '_')]}
+                      src={stepImages[optionKey(shape)]}
                       alt={shape}
                       style={{ width: '100%', height: 'auto', display: 'block' }}
                     />
@@ -1328,11 +1422,13 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
             {step === 8 && (
               <div className={styles.priceCTAs}>
                 <button className="btn btn-accent" style={{ width: '100%' }} onClick={handleAddToCart}>
-                  Add to Cart
+                  {editingCartItem ? 'Update Design' : 'Add to Cart'}
                 </button>
-                <button className="btn btn-primary" style={{ width: '100%', marginTop: '.5rem' }} onClick={handleBuyNow}>
-                  Buy Now
-                </button>
+                {!editingCartItem && (
+                  <button className="btn btn-primary" style={{ width: '100%', marginTop: '.5rem' }} onClick={handleBuyNow}>
+                    Buy Now
+                  </button>
+                )}
               </div>
             )}
           </div>

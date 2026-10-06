@@ -372,6 +372,15 @@ export default function CartPageClient() {
                           </span>
                         )}
                       </div>
+                      {item.category === 'Custom' && item.customOptions && (
+                        <Link
+                          href={`/customize?edit=${encodeURIComponent(item.id)}`}
+                          className="btn btn-outline btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', width: 'fit-content', marginBottom: '0.55rem', fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase' }}
+                        >
+                          Edit Design
+                        </Link>
+                      )}
                       {item.customOptions && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--gray-50)', padding: '0.5rem', borderRadius: '4px', marginTop: '0.2rem', marginBottom: '0.2rem' }}>
                           <span style={{ fontWeight: 600 }}>Details:</span>

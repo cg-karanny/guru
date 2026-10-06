@@ -9,14 +9,42 @@ import AdminSidebar from '@/components/AdminSidebar';
 import styles from '../admin.module.css';
 
 const SHAPE_KEYS = [
-  { key: 'Rectangle', label: 'Throw Pillow' },
-  { key: 'Box', label: 'Rectangle' },
-  { key: 'Trapezium', label: 'Trapezium' },
-  { key: 'T Cushion', label: 'T Cushion' },
-  { key: 'L Shape', label: 'L Shape' },
-  { key: 'Triangle', label: 'Triangle' },
-  { key: 'Round', label: 'Round' },
-  { key: 'Pillow', label: 'Pillow' },
+  { key: 'Squared Corners', label: 'Squared Corners' },
+  { key: 'Squared Corners 2', label: 'Squared Corners 2' },
+  { key: 'Squared Corners 3', label: 'Squared Corners 3' },
+  { key: 'Rounded Corners', label: 'Rounded Corners' },
+  { key: 'Rounded Front', label: 'Rounded Front' },
+  { key: 'Rounded Back', label: 'Rounded Back' },
+  { key: 'Trapezoid', label: 'Trapezoid' },
+  { key: 'Rectangle 1 Break', label: 'Rectangle 1 Break' },
+  { key: 'Rectangle 2 Breaks', label: 'Rectangle 2 Breaks' },
+  { key: 'Rectangle 3 Breaks', label: 'Rectangle 3 Breaks' },
+  { key: 'Rounded Rectangle 1 Break', label: 'Rounded Rectangle 1 Break' },
+  { key: 'Rounded Rectangle 2 Breaks', label: 'Rounded Rectangle 2 Breaks' },
+  { key: 'Rounded Rectangle 3 Breaks', label: 'Rounded Rectangle 3 Breaks' },
+  { key: 'Circle', label: 'Circle' },
+  { key: 'Outer Bottom Corners Rounded', label: 'Outer Bottom Corners Rounded' },
+  { key: 'All Bottom Corners Rounded', label: 'All Bottom Corners Rounded' },
+  { key: 'Outer Top Corners Rounded', label: 'Outer Top Corners Rounded' },
+  { key: 'All Top Corners Rounded', label: 'All Top Corners Rounded' },
+  { key: 'Outer Corners Rounded', label: 'Outer Corners Rounded' },
+  { key: 'All Corners Rounded', label: 'All Corners Rounded' },
+  { key: '1 Seat 1 Back', label: '1 Seat 1 Back' },
+  { key: '1 Seat 2 Back', label: '1 Seat 2 Back' },
+  { key: '2 Seat 1 Back', label: '2 Seat 1 Back' },
+  { key: '2 Seat 2 Back', label: '2 Seat 2 Back' },
+  { key: '3 Seat 1 Back', label: '3 Seat 1 Back' },
+  { key: '3 Seat 3 Back', label: '3 Seat 3 Back' },
+  { key: '2 Outer Bottom Corners Rounded', label: '2 Outer Bottom Corners Rounded' },
+  { key: '2 Outer Corners Rounded', label: '2 Outer Corners Rounded' },
+  { key: '2 Outer Top Corners Rounded', label: '2 Outer Top Corners Rounded' },
+  { key: '3 All Front Corners Rounded', label: '3 All Front Corners Rounded' },
+  { key: '3 All Back Corners Rounded', label: '3 All Back Corners Rounded' },
+  { key: '3 All Bottom Corners Rounded', label: '3 All Bottom Corners Rounded' },
+  { key: '3 All Corners Rounded', label: '3 All Corners Rounded' },
+  { key: '3 Outer Back Corners Rounded', label: '3 Outer Back Corners Rounded' },
+  { key: '3 Outer Front Corners Rounded', label: '3 Outer Front Corners Rounded' },
+  { key: '3 Outer Top Corners Rounded', label: '3 Outer Top Corners Rounded' },
 ];
 
 type MediaItem = {
@@ -24,12 +52,13 @@ type MediaItem = {
   url: string;
 };
 
-const shapeMediaKey = (key: string) => `shape_${key.toLowerCase().replace(/ /g, '_')}`;
+const optionKey = (key: string) => key.toLowerCase().replace(/ /g, '_');
+const shapeMediaKey = (key: string) => `shape_${optionKey(key)}`;
 
 export default function AdminShapePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [shapeKey, setShapeKey] = useState('Rectangle');
+  const [shapeKey, setShapeKey] = useState(SHAPE_KEYS[0].key);
   const [shapeFile, setShapeFile] = useState<File | null>(null);
   const [shapeUploading, setShapeUploading] = useState(false);
   const [shapeMsg, setShapeMsg] = useState('');
@@ -78,7 +107,7 @@ export default function AdminShapePage() {
 
     const fd = new FormData();
     fd.append('file', shapeFile);
-    fd.append('key', `shape_${shapeKey.toLowerCase().replace(/ /g, '_')}`);
+    fd.append('key', shapeMediaKey(shapeKey));
     fd.append('type', 'image');
 
     try {
@@ -166,7 +195,7 @@ export default function AdminShapePage() {
           {imagesLoading ? (
             <p style={{ color: 'var(--text-muted)' }}>Loading shape images...</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
               {SHAPE_KEYS.map(shape => {
                 const imageUrl = shapeImages[shapeMediaKey(shape.key)];
                 return (
