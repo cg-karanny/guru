@@ -492,8 +492,9 @@ function ImgOptionCard({
   };
 
   return (
-    <div style={{ position: 'relative', display: 'contents' }}>
+    <div style={{ position: 'relative', height: '100%' }}>
       <button
+        type="button"
         className={`${styles.imgOptionCard} ${selected ? styles.imgOptionSelected : ''}`}
         onClick={onClick}
       >
@@ -508,8 +509,10 @@ function ImgOptionCard({
         <span className={styles.imgOptionLabel}>{label}</span>
       </button>
 
-      {isAdmin && (
+      {isAdmin && onUpload && (
         <div
+          title="Upload image"
+          aria-label="Upload image"
           style={{ position: 'absolute', top: 5, right: 5, zIndex: 10, cursor: 'pointer', background: 'white', border: '1px solid var(--gray-300)', padding: '2px 4px', borderRadius: '4px', fontSize: '10px' }}
           onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
         >
@@ -687,8 +690,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
       .then((items: { key: string; url: string }[]) => {
         const map: Record<string, string> = {};
         items.forEach(item => {
-          // Allow identifying shapes, fills, zippers, pipings, ties by their normalized key
-          const key = item.key.replace(/^(shape|fill|zipper|piping|ties)_/, '').toLowerCase();
+          // Allow identifying uploaded option media by their normalized key.
+          const key = item.key.replace(/^(type|shape|fill|zipper|piping|ties)_/, '').toLowerCase();
           map[key] = item.url;
         });
         setStepImages(map);
@@ -765,6 +768,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     fd.append('file', file);
     // Determine type string for DB
     let prefix = 'shape_';
+    if (CUSHION_TYPES.find(f => f.key === key)) prefix = 'type_';
     if (FILL_OPTIONS.find(f => f.key === key)) prefix = 'fill_';
     if (ZIPPER_OPTS.find(f => f.key === key)) prefix = 'zipper_';
     if (PIPING_OPTS.find(f => f.key === key)) prefix = 'piping_';
@@ -952,17 +956,24 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className={styles.imgOptGrid}>
-                  {visibleCushionTypes.map(opt => (
-                    <ImgOptionCard
-                      key={opt.key}
-                      opt={opt}
-                      selected={stepOneSelection === 'type' && cushionType === opt.key}
-                      onClick={() => {
-                        setCushionType(opt.key);
-                        setStepOneSelection('type');
-                      }}
-                    />
-                  ))}
+                  {visibleCushionTypes.map(opt => {
+                    const imgKey = optionKey(opt.key);
+                    const imgUrl = stepImages[imgKey];
+                    return (
+                      <ImgOptionCard
+                        key={opt.key}
+                        opt={opt}
+                        selected={stepOneSelection === 'type' && cushionType === opt.key}
+                        onClick={() => {
+                          setCushionType(opt.key);
+                          setStepOneSelection('type');
+                        }}
+                        stepImgUrl={imgUrl}
+                        isAdmin={isAdmin}
+                        onUpload={(f) => handleImageUpload(opt.key, f)}
+                      />
+                    );
+                  })}
 
                   {visibleShapes.map(s => {
                     const imgKey = optionKey(s.key);
