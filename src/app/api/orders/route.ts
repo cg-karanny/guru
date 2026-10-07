@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
     const safeStatus = typeof status === 'string' && status in OrderStatus
       ? OrderStatus[status as keyof typeof OrderStatus]
       : OrderStatus.ORDER_RECEIVED;
-    const safePaymentMethod = typeof paymentMethod === 'string' ? paymentMethod : 'COD';
+    if (paymentMethod && paymentMethod !== 'STRIPE') {
+      return NextResponse.json({ error: 'Unsupported payment method' }, { status: 400 });
+    }
+    const safePaymentMethod = 'STRIPE';
     const safeTotal = Number(total ?? 0);
     const safeDeliveryCharge = Number(deliveryCharge ?? 0);
     const addressData = shippingAddr ? {
@@ -68,7 +71,7 @@ export async function POST(req: NextRequest) {
       const siteName = siteSettings.find(s => s.key === 'siteName')?.value || 'Cushion Guru';
       const siteLogo = siteSettings.find(s => s.key === 'logoUrl')?.value;
 
-      if (user?.email && safePaymentMethod !== 'stripe') {
+      if (user?.email && safePaymentMethod !== 'STRIPE') {
         const { sendMail } = await import('@/lib/mail');
         const { generateOrderConfirmationEmail } = await import('@/lib/email-templates');
         
