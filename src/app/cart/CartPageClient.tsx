@@ -147,7 +147,7 @@ const statusColor: Record<string, { bg: string; color: string }> = {
 };
 
 export default function CartPageClient() {
-  const { items, total, count, updateQuantity, removeItem, clearCart } = useCart();
+  const { items, total, count, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -158,7 +158,7 @@ export default function CartPageClient() {
   const [shipping, setShipping] = useState<AddrType>({ ...EMPTY });
   const [billingSame, setBillingSame] = useState(true);
   const [billing, setBilling] = useState<AddrType>({ ...EMPTY });
-  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'COD'>('STRIPE');
+  const paymentMethod = 'STRIPE';
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const deliveryCharge = 0;
   const finalTotal = total + deliveryCharge;
@@ -285,31 +285,25 @@ export default function CartPageClient() {
           status: 'ORDER_RECEIVED',
           shippingAddr: { ...shipping, phone: `${shipping.phoneCode || '+1'}${shipping.phone}` },
           billingAddr: billingSame ? { ...shipping, phone: `${shipping.phoneCode || '+1'}${shipping.phone}` } : { ...billing, phone: `${billing.phoneCode || '+1'}${billing.phone}` },
-          notes: paymentMethod === 'COD' ? 'Cash on Delivery' : 'Stripe checkout initiated',
+          notes: 'Stripe checkout initiated',
         }),
       });
       if (res.ok) {
         const order = await res.json();
 
-        if (paymentMethod === 'STRIPE') {
-          // 2. Init Stripe Checkout
-          const stripeRes = await fetch('/api/checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ orderId: order.id }),
-          });
-          const session = await stripeRes.json();
-          if (session.url) {
-            window.location.href = session.url;
-          } else {
-            alert('Stripe error: ' + (session.error || 'Unknown'));
-            setIsProcessing(false);
-          }
+        // 2. Init Stripe Checkout
+        const stripeRes = await fetch('/api/checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        const session = await stripeRes.json();
+        if (session.url) {
+          window.location.href = session.url;
         } else {
-          // COD - finish
-          clearCart();
-          router.push('/account/orders');
+          alert('Stripe error: ' + (session.error || 'Unknown'));
+          setIsProcessing(false);
         }
       } else {
         const err = await res.json();
@@ -484,12 +478,8 @@ export default function CartPageClient() {
                   <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 1.5rem 0', color: 'var(--brand-primary)' }}>💲 Payment Method</h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: `2px solid ${paymentMethod === 'STRIPE' ? 'var(--brand-primary)' : 'var(--gray-200)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', background: paymentMethod === 'STRIPE' ? '#f0f4f8' : 'white' }}>
-                      <input type="radio" name="paymentMethod" value="STRIPE" checked={paymentMethod === 'STRIPE'} onChange={() => setPaymentMethod('STRIPE')} style={{ transform: 'scale(1.2)' }} />
+                      <input type="radio" name="paymentMethod" value="STRIPE" checked readOnly style={{ transform: 'scale(1.2)' }} />
                       <div style={{ fontWeight: 600 }}>Pay with Stripe (Card)</div>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: `2px solid ${paymentMethod === 'COD' ? 'var(--brand-primary)' : 'var(--gray-200)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', background: paymentMethod === 'COD' ? '#f0f4f8' : 'white' }}>
-                      <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} style={{ transform: 'scale(1.2)' }} />
-                      <div style={{ fontWeight: 600 }}>Cash on Delivery (COD)</div>
                     </label>
                   </div>
                 </div>
@@ -533,7 +523,7 @@ export default function CartPageClient() {
                     <span>Total</span><span style={{ color: 'var(--brand-secondary)' }}>${finalTotal.toFixed(2)}</span>
                   </div>
                   <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em' }} disabled={isProcessing}>
-                    {isProcessing ? 'Processing…' : (paymentMethod === 'STRIPE' ? 'Pay with Stripe' : 'Place Order')}
+                    {isProcessing ? 'Processing…' : 'Pay with Stripe'}
                   </button>
                   <button type="button" onClick={() => setShowCheckout(false)} style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                     ← Back to Cart
