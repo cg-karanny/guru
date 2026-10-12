@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../account.module.css';
@@ -9,13 +9,24 @@ export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleRequestOtp = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resetEmail = params.get('email');
+    const resetToken = params.get('token');
+    if (resetEmail && resetToken) {
+      setEmail(resetEmail);
+      setToken(resetToken);
+      setStep(2);
+    }
+  }, []);
+
+  const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -28,13 +39,12 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStep(2);
-        setSuccess('An OTP has been sent to your email.');
+        setSuccess(data.message || 'A password reset link has been sent to your email.');
       } else {
-        setError(data.error || 'Failed to send OTP');
+        setError(data.error || 'Failed to send reset link');
       }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -49,7 +59,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, newPassword })
+        body: JSON.stringify({ email, token, newPassword })
       });
       const data = await res.json();
       if (res.ok) {
@@ -60,8 +70,8 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.error || 'Failed to reset password');
       }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -71,30 +81,26 @@ export default function ForgotPasswordPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <div className={styles.logo}>🛋️</div>
+          <div className={styles.logo}>CG</div>
           <h1>{step === 1 ? 'Forgot Password' : 'Reset Password'}</h1>
-          <p>{step === 1 ? "Enter your email to receive a reset code." : "Enter the code and your new password."}</p>
+          <p>{step === 1 ? "Enter your email to receive a reset link." : "Enter your new password."}</p>
         </div>
 
         {error && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>}
         {success && <div className="alert alert-success" style={{ marginBottom: '1rem', color: "green" }}>{success}</div>}
 
         {step === 1 ? (
-          <form onSubmit={handleRequestOtp} className={styles.form}>
+          <form onSubmit={handleRequestReset} className={styles.form}>
             <div className="form-group">
               <label className="form-label" htmlFor="reset-email">Email Address <span style={{ color: 'var(--error)' }}>*</span></label>
               <input id="reset-email" type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" required />
             </div>
             <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Code'}
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
         ) : (
           <form onSubmit={handleResetPassword} className={styles.form}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="reset-otp">Verification Code <span style={{ color: 'var(--error)' }}>*</span></label>
-              <input id="reset-otp" type="text" placeholder="6-digit code" value={otp} onChange={(e) => setOtp(e.target.value)} className="form-control" required />
-            </div>
             <div className="form-group">
               <label className="form-label" htmlFor="reset-pwd">New Password <span style={{ color: 'var(--error)' }}>*</span></label>
               <input id="reset-pwd" type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="form-control" required minLength={6} />
