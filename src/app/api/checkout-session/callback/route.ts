@@ -109,13 +109,17 @@ export async function GET(req: NextRequest) {
         console.error('Stock increment error:', stockErr);
       }
 
-      // Delete the order so it doesn't show up in the orders list
+      // Keep the order in history so the customer can see every checkout attempt.
       try {
-        await prisma.order.delete({
-          where: { id: order.id }
+        await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'CANCELLED',
+            notes: order.notes ? `${order.notes} | Stripe checkout cancelled` : 'Stripe checkout cancelled',
+          },
         });
-      } catch (deleteErr) {
-        console.error('Failed to delete cancelled order:', deleteErr);
+      } catch (updateErr) {
+        console.error('Failed to mark cancelled order:', updateErr);
       }
 
       return NextResponse.redirect(`${originUrl}/cart?canceled=true`);

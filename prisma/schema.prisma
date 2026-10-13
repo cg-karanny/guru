@@ -30,6 +30,11 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum AddressKind {
+  DELIVERY
+  BILLING
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
@@ -41,6 +46,7 @@ model User {
   orders    Order[]
   cartItems CartItem[]
   cartData  Json?      // Stores the whole cart (both custom & non-custom)
+  addresses UserAddress[]
 }
 
 model Order {
@@ -57,6 +63,29 @@ model Order {
   notes          String?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+}
+
+model UserAddress {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      AddressKind
+  label     String?
+  fullName  String
+  email     String
+  phone     String
+  phoneCode String      @default("+1")
+  address   String
+  city      String
+  state     String
+  zip       String
+  country   String
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId, kind])
+  @@map("user_addresses")
 }
 
 model Media {

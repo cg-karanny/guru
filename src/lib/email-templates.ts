@@ -1,18 +1,72 @@
 import { getOrderedCustomOptions } from './format-options';
 
-export function generateOrderConfirmationEmail(order: any, brandName: string, brandLogoUrl?: string, customerName: string = 'Valued Customer', originUrl?: string) {
+interface OrderEmailItem {
+  name?: string;
+  category?: string;
+  image?: string;
+  customOptions?: Record<string, string>;
+  price: number;
+  quantity?: number;
+}
+
+interface OrderEmailData {
+  id: string;
+  items?: unknown;
+  deliveryCharge?: number;
+  total: number;
+  paymentMethod: string;
+  notes?: string | null;
+}
+
+function isOrderEmailItemArray(items: unknown): items is OrderEmailItem[] {
+  return Array.isArray(items) && items.every((item) => (
+    item !== null &&
+    typeof item === 'object' &&
+    'price' in item &&
+    typeof item.price === 'number'
+  ));
+}
+
+function renderEmailLogo(brandName: string) {
+  const normalizedBrandName = brandName.trim() || 'Cushion Guru';
+  const brandParts = normalizedBrandName.split(/\s+/);
+  const lastWord = brandParts[brandParts.length - 1];
+  const hasGuruSuffix = lastWord?.toLowerCase() === 'guru';
+  const primaryText = hasGuruSuffix ? (brandParts.slice(0, -1).join(' ') || 'Cushion') : normalizedBrandName;
+  const secondaryText = hasGuruSuffix ? lastWord : '';
+
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; margin: 0 0 24px; background-color: #ffffff;">
+      <tr>
+        <td align="center" style="padding: 0; background-color: #ffffff;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; background-color: #ffffff;">
+            <tr>
+              <td align="center" style="padding: 6px 12px; background-color: #ffffff;">
+                <div style="font-family: Arial, Helvetica, sans-serif; color: #f05a28; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; line-height: 1;">
+                  <div style="font-size: 30px; line-height: 32px;">${primaryText}</div>
+                  ${secondaryText ? `<div style="font-size: 14px; line-height: 18px; letter-spacing: 8px;">${secondaryText}</div>` : ''}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+export function generateOrderConfirmationEmail(order: OrderEmailData, brandName: string, brandLogoUrl?: string, customerName: string = 'Valued Customer', originUrl?: string) {
   const siteUrl = originUrl || (process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '') : 'http://localhost:3000');
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
+  const orderItems = isOrderEmailItemArray(order.items) ? order.items : [];
 
   console.log('--- DEBUG EMAIL TEMPLATE ---');
   console.log('Input brandLogoUrl:', brandLogoUrl);
   console.log('Derived siteUrl:', siteUrl);
-  console.log('Final injected logoUrl:', logoUrl);
   console.log('----------------------------');
 
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; color: #333; background-color: #ffffff;">
-      ${logoUrl ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${logoUrl}" alt="${brandName}" style="max-height: 50px; background-color: transparent;"></div>` : `<h2 style="text-align: center;">${brandName}</h2>`}
+      ${renderEmailLogo(brandName)}
       
       <h3 style="color: #4CAF50;">Order Confirmation</h3>
       <p>Dear ${customerName},</p>
@@ -21,7 +75,7 @@ export function generateOrderConfirmationEmail(order: any, brandName: string, br
       <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 20px;">
         <p><strong>Order ID:</strong> ${order.id.slice(-8).toUpperCase()}</p>
         ${(() => {
-      const subtotal = (order.items as any[])?.reduce((acc: number, val: any) => acc + (val.price * val.quantity), 0) || 0;
+      const subtotal = orderItems.reduce((acc, val) => acc + (val.price * (val.quantity || 1)), 0);
       const calculatedTotal = subtotal + (order.deliveryCharge || 0);
       const discount = calculatedTotal - order.total;
       if (discount > 0.01) {
@@ -42,14 +96,14 @@ export function generateOrderConfirmationEmail(order: any, brandName: string, br
 
       <h4 style="margin-top: 30px;">Order Details</h4>
       
-      ${order.items && Array.isArray(order.items) ? `
+      ${orderItems.length > 0 ? `
       <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
         <tr style="background: #eee;">
           <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Item</th>
           <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Qty</th>
           <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Price</th>
         </tr>
-        ${order.items.map((item: any) => {
+        ${orderItems.map((item) => {
       const itemImgUrl = item.image ? (item.image.startsWith('http') ? item.image : `${siteUrl}/${item.image.replace(/^\//, '')}`) : '';
       const customDetails = item.customOptions ? getOrderedCustomOptions(item.customOptions)
         .map(([k, v]) => `<strong>${k.charAt(0).toUpperCase() + k.slice(1)}:</strong> ${v}`)
@@ -86,19 +140,16 @@ export function generateOrderConfirmationEmail(order: any, brandName: string, br
 }
 
 export function generateOtpEmail(otp: string, type: 'REGISTER' | 'FORGOT_PASSWORD' | 'CHANGE_PASSWORD', brandName: string, brandLogoUrl?: string) {
+  void brandLogoUrl;
   let actionText = '';
   switch (type) {
     case 'REGISTER': actionText = 'registering your account'; break;
     case 'FORGOT_PASSWORD': actionText = 'resetting your password'; break;
     case 'CHANGE_PASSWORD': actionText = 'changing your password'; break;
   }
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '') : 'http://localhost:3000';
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
-
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; color: #333; text-align: center; background-color: #ffffff;">
-      ${logoUrl ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: 50px; margin-bottom: 20px; background-color: transparent;">` : `<h2>${brandName}</h2>`}
+      ${renderEmailLogo(brandName)}
       
       <h3>Verification Code</h3>
       <p>Here is your one-time password (OTP) for ${actionText}.</p>
@@ -112,13 +163,31 @@ export function generateOtpEmail(otp: string, type: 'REGISTER' | 'FORGOT_PASSWOR
   `;
 }
 
-export function generatePasswordChangeEmail(brandName: string, brandLogoUrl?: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '') : 'http://localhost:3000';
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
+export function generatePasswordResetEmail(resetUrl: string, brandName: string, brandLogoUrl?: string) {
+  void brandLogoUrl;
 
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; color: #333; text-align: center; background-color: #ffffff;">
-      ${logoUrl ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: 50px; margin-bottom: 20px; background-color: transparent;">` : `<h2>${brandName}</h2>`}
+      ${renderEmailLogo(brandName)}
+      
+      <h3>Password Reset Request</h3>
+      <p>We received a request to reset the password for your account.</p>
+      
+      <div style="margin: 30px 0;">
+        <a href="${resetUrl}" style="display: inline-block; padding: 12px 20px; background-color: #111827; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;">Reset Password</a>
+      </div>
+      
+      <p style="font-size: 14px; color: #777;">This link will expire in 30 minutes. If you did not request this, you can safely ignore this email.</p>
+    </div>
+  `;
+}
+
+export function generatePasswordChangeEmail(brandName: string, brandLogoUrl?: string) {
+  void brandLogoUrl;
+
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; color: #333; text-align: center; background-color: #ffffff;">
+      ${renderEmailLogo(brandName)}
       
       <h3 style="color: #4CAF50;">Password Changed Successfully</h3>
       <p>Your account password has been updated.</p>
@@ -131,12 +200,11 @@ export function generatePasswordChangeEmail(brandName: string, brandLogoUrl?: st
 }
 
 export function generateEmailVerificationOtpEmail(otp: string, actionText: string, brandName: string, brandLogoUrl?: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '') : 'http://localhost:3000';
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
+  void brandLogoUrl;
 
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; color: #333; text-align: center; background-color: #ffffff;">
-      ${logoUrl ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: 50px; margin-bottom: 20px; background-color: transparent;">` : `<h2>${brandName}</h2>`}
+      ${renderEmailLogo(brandName)}
       
       <h3>Email Verification</h3>
       <p>Here is your one-time password (OTP) for ${actionText}.</p>
@@ -150,13 +218,13 @@ export function generateEmailVerificationOtpEmail(otp: string, actionText: strin
   `;
 }
 
-export function generatePaymentFailedEmail(order: any, brandName: string, brandLogoUrl?: string, customerName: string = 'Valued Customer', originUrl?: string) {
-  const siteUrl = originUrl || (process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '') : 'http://localhost:3000');
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
+export function generatePaymentFailedEmail(order: Pick<OrderEmailData, 'id' | 'total' | 'paymentMethod'>, brandName: string, brandLogoUrl?: string, customerName: string = 'Valued Customer', originUrl?: string) {
+  void originUrl;
+  void brandLogoUrl;
 
   return `
     <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; color: #333; background-color: #ffffff;">
-      ${logoUrl ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${logoUrl}" alt="${brandName}" style="max-height: 50px; background-color: transparent;"></div>` : `<h2 style="text-align: center;">${brandName}</h2>`}
+      ${renderEmailLogo(brandName)}
       
       <h3 style="color: #f44336;">Payment Failed</h3>
       <p>Dear ${customerName},</p>
@@ -180,13 +248,9 @@ export function generatePaymentFailedEmail(order: any, brandName: string, brandL
 }
 
 export function generateWelcomeEmail(brandName: string) {
-  const logoUrl = 'https://customcushion-upload-bucket-123.s3.us-east-1.amazonaws.com/sunbrella/CG+Logo-email.jpg';
-
   return `
     <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 600px; margin: 0 auto; color: #333; background-color: #ffffff; border: 1px solid #eee; border-radius: 8px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <img src="${logoUrl}" alt="${brandName}" style="max-height: 60px; background-color: transparent;" />
-      </div>
+      ${renderEmailLogo(brandName)}
       
       <h2 style="color: #2c3e50; text-align: center;">Welcome to ${brandName}!</h2>
       <p style="font-size: 16px; line-height: 1.6;">

@@ -120,10 +120,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(orders);
     } else {
       const orders = await prisma.order.findMany({
-        where: { 
-          userId: session.id,
-          status: { not: 'CANCELLED' } 
-        },
+        where: { userId: session.id },
         orderBy: { createdAt: 'desc' },
         include: { user: true }
       });

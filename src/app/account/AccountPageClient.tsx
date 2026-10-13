@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { getPasswordPolicyError, getPasswordPolicyStatus } from '@/lib/password-policy';
 import styles from './account.module.css';
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export default function AccountPageClient() {
   const { user, login, register } = useAuth();
@@ -17,6 +22,9 @@ export default function AccountPageClient() {
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const passwordRules = getPasswordPolicyStatus(form.password);
+  const passwordIsValid = passwordRules.every(rule => rule.isMet);
 
   // If already logged in, redirect
   React.useEffect(() => {
@@ -27,6 +35,7 @@ export default function AccountPageClient() {
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    if (name === 'password') setPasswordTouched(true);
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   };
 
@@ -34,6 +43,16 @@ export default function AccountPageClient() {
     e.preventDefault();
     setLoading(true); setError('');
     if (mode === 'login') {
+      if (!isValidEmail(form.email.trim())) {
+        setError('Please enter a valid email address.');
+        setLoading(false);
+        return;
+      }
+      if (!form.password) {
+        setError('Please enter your password.');
+        setLoading(false);
+        return;
+      }
       const result = await login(form.email, form.password);
       if (result.ok) {
         router.push('/account/dashboard');
@@ -41,8 +60,30 @@ export default function AccountPageClient() {
         setError(result.error ?? 'Something went wrong');
       }
     } else {
+      if (showOtp && !/^\d{6}$/.test(otp.trim())) {
+        setError('Please enter the 6-digit verification code.');
+        setLoading(false);
+        return;
+      }
+      if (!showOtp && !form.name.trim()) {
+        setError('Please enter your full name.');
+        setLoading(false);
+        return;
+      }
+      if (!isValidEmail(form.email.trim())) {
+        setError('Please enter a valid email address.');
+        setLoading(false);
+        return;
+      }
       if (!termsAccepted) {
         setError('You must accept the Terms & Conditions to create an account.');
+        setLoading(false);
+        return;
+      }
+      const passwordError = getPasswordPolicyError(form.password);
+      if (passwordError) {
+        setPasswordTouched(true);
+        setError('');
         setLoading(false);
         return;
       }
@@ -64,6 +105,7 @@ export default function AccountPageClient() {
     setShowOtp(false);
     setOtp('');
     setTermsAccepted(false);
+    setPasswordTouched(false);
   };
 
   return (
@@ -98,7 +140,7 @@ export default function AccountPageClient() {
 
         {error && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form} noValidate>
           {showOtp ? (
             <div className="form-group">
               <label className="form-label" htmlFor="acc-otp">Verification Code <span style={{ color: 'var(--error)' }}>*</span></label>
@@ -126,8 +168,11 @@ export default function AccountPageClient() {
                     placeholder="••••••••••••••••"
                     value={form.password}
                     onChange={handleInput}
+                    onBlur={() => setPasswordTouched(true)}
                     className="form-control"
                     required
+                    aria-describedby={mode === 'register' ? 'register-password-rules' : undefined}
+                    aria-invalid={mode === 'register' && passwordTouched && !passwordIsValid}
                   />
                   <button type="button" className={styles.eyeBtn} onClick={() => setShowPwd(v => !v)} aria-label="Toggle password visibility">
                     {showPwd ? (
@@ -147,6 +192,27 @@ export default function AccountPageClient() {
                     )}
                   </button>
                 </div>
+                {mode === 'register' && (
+                  <div id="register-password-rules" className={styles.passwordRules} aria-live="polite">
+                    <div className={styles.passwordRulesTitle}>Password must include:</div>
+                    <div className={styles.passwordRulesGrid}>
+                      {passwordRules.map(rule => {
+                        const stateClass = !form.password && !passwordTouched
+                          ? styles.ruleNeutral
+                          : rule.isMet
+                            ? styles.ruleMet
+                            : styles.ruleMissing;
+
+                        return (
+                          <div key={rule.label} className={`${styles.passwordRule} ${stateClass}`}>
+                            <span className={styles.ruleDot} aria-hidden="true" />
+                            <span>{rule.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -41,6 +41,12 @@ export default function DashboardPage() {
             <p>Update your personal information</p>
             <span className={styles.arrow}>→</span>
           </Link>
+          <Link href="/account/addresses" className={styles.dashCard}>
+            <div className={styles.cardIcon}>Address</div>
+            <h3>Saved Addresses</h3>
+            <p>Manage delivery and billing addresses</p>
+            <span className={styles.arrow}>→</span>
+          </Link>
           <Link href="/customize" className={styles.dashCard}>
             <div className={styles.cardIcon}>✏️</div>
             <h3>New Order</h3>
@@ -64,7 +70,15 @@ export default function DashboardPage() {
 }
 
 function RecentOrders() {
-  const [orders, setOrders] = React.useState<any[]>([]);
+  type RecentOrder = {
+    id: string;
+    createdAt: string;
+    status: string;
+    total: number;
+    items?: { quantity?: number; name?: string }[];
+  };
+
+  const [orders, setOrders] = React.useState<RecentOrder[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -127,7 +141,7 @@ function RecentOrders() {
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {(order.items as any[])?.map((item: any, idx: number) => (
+                {order.items?.map((item, idx) => (
                   <span key={idx} style={{ background: 'var(--gray-100)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                     {item.quantity}× {item.name}
                   </span>

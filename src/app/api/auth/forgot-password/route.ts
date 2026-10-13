@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { sendMail } from '@/lib/mail';
-import { generateOtpEmail } from '@/lib/email-templates';
+import { generatePasswordResetEmail } from '@/lib/email-templates';
 import { getSiteBrandSettings } from '@/lib/site-settings';
 
 export async function POST(req: NextRequest) {
@@ -11,33 +12,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    const emailLower = email.toLowerCase();
+    const emailLower = email.trim().toLowerCase();
     const user = await prisma.user.findUnique({ where: { email: emailLower } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ message: 'If an account exists, a password reset link has been sent.' }, { status: 200 });
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await prisma.otp.upsert({
       where: { email_type: { email: emailLower, type: 'FORGOT_PASSWORD' } },
-      update: { code, expiresAt },
-      create: { email: emailLower, type: 'FORGOT_PASSWORD', code, expiresAt }
+      update: { code: tokenHash, expiresAt },
+      create: { email: emailLower, type: 'FORGOT_PASSWORD', code: tokenHash, expiresAt }
     });
 
     const { siteName, siteLogo } = await getSiteBrandSettings();
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/$/, '');
+    const resetUrl = new URL('/account/forgot-password', siteUrl);
+    resetUrl.searchParams.set('email', emailLower);
+    resetUrl.searchParams.set('token', token);
 
-    const htmlContent = generateOtpEmail(code, 'FORGOT_PASSWORD', siteName, siteLogo);
+    const htmlContent = generatePasswordResetEmail(resetUrl.toString(), siteName, siteLogo);
     
-    await sendMail({
+    const sent = await sendMail({
       to: emailLower,
       subject: `Password Reset Request - ${siteName}`,
       html: htmlContent,
       bcc: process.env.BCC_EMAIL
     });
 
-    return NextResponse.json({ message: 'OTP sent to your email' }, { status: 200 });
+    if (!sent) {
+      return NextResponse.json({ error: 'Unable to send password reset email. Please try again later.' }, { status: 502 });
+    }
+
+    return NextResponse.json({ message: 'Password reset link sent to your email' }, { status: 200 });
   } catch (err) {
     console.error('Forgot password error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
