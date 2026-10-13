@@ -75,7 +75,15 @@ const COUNTRY_CODES = [
   { code: '+593', label: 'EC (+593)' },
 ];
 
-const FIELDS = [
+const FIELDS: {
+  name: keyof AddrType;
+  label: string;
+  col: string;
+  type: string;
+  isPhone?: boolean;
+  pattern?: string;
+  title?: string;
+}[] = [
   { name: 'fullName', label: 'Full name', col: '1 / -1', type: 'text', pattern: "^[a-zA-Z\\s\\-']{2,}$", title: "Only letters and spaces allowed" },
   { name: 'email', label: 'Email address', col: '1 / -1', type: 'email' },
   { name: 'phone', label: 'Phone number', col: '', type: 'tel', isPhone: true },
@@ -87,6 +95,13 @@ const FIELDS = [
 ];
 
 interface AddrType { fullName: string; email: string; phone: string; phoneCode: string; address: string; city: string; state: string; zip: string; country: string; }
+
+interface SavedAddress extends AddrType {
+  id: string;
+  kind: 'DELIVERY' | 'BILLING';
+  label: string | null;
+  isDefault: boolean;
+}
 
 function AddressForm({ values, onChange, onCodeChange }: { values: AddrType; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; onCodeChange?: (code: string) => void }) {
   return (
@@ -121,13 +136,13 @@ function AddressForm({ values, onChange, onCodeChange }: { values: AddrType; onC
             <input
               type={field.type || "text"}
               name={field.name}
-              value={(values as any)[field.name]}
+              value={values[field.name]}
               onChange={onChange}
               style={inputStyle}
               required
               placeholder={field.label.charAt(0).toUpperCase() + field.label.slice(1)}
-              pattern={(field as any).pattern}
-              title={(field as any).title}
+              pattern={field.pattern}
+              title={field.title}
             />
           )}
         </div>
@@ -158,6 +173,8 @@ export default function CartPageClient() {
   const [shipping, setShipping] = useState<AddrType>({ ...EMPTY });
   const [billingSame, setBillingSame] = useState(true);
   const [billing, setBilling] = useState<AddrType>({ ...EMPTY });
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
   const paymentMethod = 'STRIPE';
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const deliveryCharge = 0;
@@ -170,6 +187,50 @@ export default function CartPageClient() {
       window.scrollTo({ top: 0 });
     }
   }, [searchParams, user, count]);
+
+  useEffect(() => {
+    if (!showCheckout || !user) return;
+
+    let cancelled = false;
+    setLoadingAddresses(true);
+    fetch('/api/account/addresses', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : [])
+      .then((data: SavedAddress[]) => {
+        if (cancelled || !Array.isArray(data)) return;
+        setSavedAddresses(data);
+
+        const defaultDelivery = data.find(address => address.kind === 'DELIVERY' && address.isDefault) || data.find(address => address.kind === 'DELIVERY');
+        const defaultBilling = data.find(address => address.kind === 'BILLING' && address.isDefault) || data.find(address => address.kind === 'BILLING');
+
+        if (defaultDelivery) setShipping(addressToForm(defaultDelivery));
+        if (defaultBilling) {
+          setBilling(addressToForm(defaultBilling));
+          setBillingSame(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingAddresses(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showCheckout, user]);
+
+  const addressToForm = (address: SavedAddress): AddrType => ({
+    fullName: address.fullName,
+    email: address.email,
+    phone: address.phone,
+    phoneCode: address.phoneCode || '+1',
+    address: address.address,
+    city: address.city,
+    state: address.state,
+    zip: address.zip,
+    country: address.country,
+  });
+
+  const deliveryAddresses = savedAddresses.filter(address => address.kind === 'DELIVERY');
+  const billingAddresses = savedAddresses.filter(address => address.kind === 'BILLING');
 
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
@@ -444,6 +505,28 @@ export default function CartPageClient() {
                       {isDetecting ? 'Detecting...' : '📍 Auto-Detect'}
                     </button>
                   </div>
+                  {loadingAddresses ? (
+                    <div style={{ padding: '0.85rem 1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Loading saved addresses...</div>
+                  ) : deliveryAddresses.length > 0 && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label style={labelStyle}>Use saved delivery address</label>
+                      <select
+                        defaultValue=""
+                        onChange={e => {
+                          const selected = deliveryAddresses.find(address => address.id === e.target.value);
+                          if (selected) setShipping(addressToForm(selected));
+                        }}
+                        style={inputStyle}
+                      >
+                        <option value="">Select a saved delivery address</option>
+                        {deliveryAddresses.map(address => (
+                          <option key={address.id} value={address.id}>
+                            {address.label || address.fullName}{address.isDefault ? ' (Default)' : ''} - {address.city}, {address.country}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <AddressForm values={shipping} onChange={handleShippingChange} onCodeChange={(code) => setShipping(prev => ({ ...prev, phoneCode: code }))} />
                 </div>
 
@@ -470,7 +553,31 @@ export default function CartPageClient() {
                   </div>
                   {billingSame
                     ? <div style={{ padding: '1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ Using same address as shipping</div>
-                    : <AddressForm values={billing} onChange={handleBillingChange} onCodeChange={(code) => setBilling(prev => ({ ...prev, phoneCode: code }))} />
+                    : <>
+                        {loadingAddresses ? (
+                          <div style={{ padding: '0.85rem 1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Loading saved addresses...</div>
+                        ) : billingAddresses.length > 0 && (
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={labelStyle}>Use saved billing address</label>
+                            <select
+                              defaultValue=""
+                              onChange={e => {
+                                const selected = billingAddresses.find(address => address.id === e.target.value);
+                                if (selected) setBilling(addressToForm(selected));
+                              }}
+                              style={inputStyle}
+                            >
+                              <option value="">Select a saved billing address</option>
+                              {billingAddresses.map(address => (
+                                <option key={address.id} value={address.id}>
+                                  {address.label || address.fullName}{address.isDefault ? ' (Default)' : ''} - {address.city}, {address.country}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        <AddressForm values={billing} onChange={handleBillingChange} onCodeChange={(code) => setBilling(prev => ({ ...prev, phoneCode: code }))} />
+                      </>
                   }
                 </div>
 

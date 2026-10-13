@@ -5,19 +5,21 @@ import { createSession } from '@/lib/session';
 import { sendMail } from '@/lib/mail';
 import { generateOtpEmail } from '@/lib/email-templates';
 import { getSiteBrandSettings } from '@/lib/site-settings';
+import { getPasswordPolicyError } from '@/lib/password-policy';
 
 export async function POST(req: NextRequest) {
   try {
     const { name, email, password, otp } = await req.json();
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    const passwordError = getPasswordPolicyError(password);
+    if (passwordError) {
+      return NextResponse.json({ error: passwordError }, { status: 400 });
     }
 
-    const emailLower = email.toLowerCase();
+    const emailLower = email.trim().toLowerCase();
     const existing = await prisma.user.findUnique({ where: { email: emailLower } });
     if (existing) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });

@@ -134,6 +134,69 @@
   font-size: 1rem;
 }
 
+.passwordRules {
+  margin-top: .65rem;
+  padding: .75rem .85rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+}
+
+.passwordRulesTitle {
+  margin-bottom: .55rem;
+  color: var(--text-secondary);
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.passwordRulesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .45rem .75rem;
+}
+
+.passwordRule {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: .45rem;
+  color: var(--text-muted);
+  font-size: .8rem;
+  line-height: 1.35;
+  transition: color .18s ease;
+}
+
+.ruleDot {
+  width: .45rem;
+  height: .45rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: var(--gray-300);
+  transition: background-color .18s ease, box-shadow .18s ease;
+}
+
+.ruleMet {
+  color: #15803d;
+}
+
+.ruleMet .ruleDot {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, .12);
+}
+
+.ruleMissing {
+  color: #b42318;
+}
+
+.ruleMissing .ruleDot {
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
+}
+
+.ruleNeutral {
+  color: var(--text-muted);
+}
+
 .options {
   display: flex;
   align-items: center;
@@ -200,4 +263,10 @@
 
 .switchBtn:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .passwordRulesGrid {
+    grid-template-columns: 1fr;
+  }
 }
