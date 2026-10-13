@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const { siteName, siteLogo } = await getSiteBrandSettings();
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/$/, '');
-    const resetUrl = new URL('/account/forgot-password', siteUrl);
+    const resetUrl = new URL(`${siteUrl}/account/forgot-password`);
     resetUrl.searchParams.set('email', emailLower);
     resetUrl.searchParams.set('token', token);
 
