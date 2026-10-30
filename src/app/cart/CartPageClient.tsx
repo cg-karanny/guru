@@ -104,9 +104,20 @@ interface SavedAddress extends AddrType {
   isDefault: boolean;
 }
 
-function AddressForm({ values, onChange, onCodeChange }: { values: AddrType; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; onCodeChange?: (code: string) => void }) {
+function AddressForm({ values, onChange, onCodeChange, onSave, saving = false, isDefault = false, addressId }: {
+  values: AddrType;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCodeChange?: (code: string) => void;
+  onSave?: (makeDefault: boolean) => Promise<void>;
+  saving?: boolean;
+  isDefault?: boolean;
+  addressId?: string;
+}) {
+  const fieldsRef = React.useRef<HTMLFieldSetElement>(null);
+  const [defaultChoice, setDefaultChoice] = useState<{ addressId?: string; selected: boolean }>({ selected: false });
+  const makeDefault = defaultChoice.addressId === addressId && defaultChoice.selected;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+    <fieldset ref={fieldsRef} disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
       {FIELDS.map(field => (
         <div key={field.name} style={{ display: 'flex', flexDirection: 'column', gridColumn: field.col || '' }}>
           <label style={labelStyle}>{field.label.charAt(0).toUpperCase() + field.label.slice(1)}</label>
@@ -148,7 +159,22 @@ function AddressForm({ values, onChange, onCodeChange }: { values: AddrType; onC
           )}
         </div>
       ))}
-    </div>
+      {onSave && <div style={{ gridColumn: '1 / -1' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1rem', fontSize: '.9rem', cursor: 'pointer' }}>
+          <input type="checkbox" checked={isDefault || makeDefault} disabled={isDefault} onChange={event => setDefaultChoice({ addressId, selected: event.target.checked })} style={{ accentColor: 'var(--brand-primary)' }} />
+          {isDefault ? 'This is your default address' : 'Set as default address'}
+        </label>
+        <button type="button" className="btn btn-outline" disabled={saving} onClick={() => {
+          const fields = fieldsRef.current?.querySelectorAll<HTMLInputElement>('input');
+          if (!fields) return;
+          for (const field of fields) {
+            if (!field.reportValidity()) return;
+          }
+          void onSave(isDefault || makeDefault);
+        }}>{saving ? 'Saving Address...' : 'Save Address'}</button>
+        <p style={{ fontSize: '.8rem', marginTop: '.5rem' }}>Save this address to your account for future orders.</p>
+      </div>}
+    </fieldset>
   );
 }
 
@@ -176,6 +202,8 @@ export default function CartPageClient() {
   const [billing, setBilling] = useState<AddrType>({ ...EMPTY });
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [savingAddress, setSavingAddress] = useState<'DELIVERY' | 'BILLING' | null>(null);
+  const [addressMessage, setAddressMessage] = useState<{ kind: 'DELIVERY' | 'BILLING'; success: boolean; text: string } | null>(null);
   const paymentMethod = 'STRIPE';
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const deliveryCharge = 0;
@@ -209,6 +237,9 @@ export default function CartPageClient() {
           setBillingSame(false);
         }
       })
+      .catch(() => {
+        if (!cancelled) setAddressMessage({ kind: 'DELIVERY', success: false, text: 'Could not load saved addresses. You can still enter an address for this order.' });
+      })
       .finally(() => {
         if (!cancelled) setLoadingAddresses(false);
       });
@@ -232,6 +263,45 @@ export default function CartPageClient() {
 
   const deliveryAddresses = savedAddresses.filter(address => address.kind === 'DELIVERY');
   const billingAddresses = savedAddresses.filter(address => address.kind === 'BILLING');
+
+  const matchingAddress = (kind: 'DELIVERY' | 'BILLING', values: AddrType) => savedAddresses.find(address =>
+    address.kind === kind && (Object.keys(EMPTY) as (keyof AddrType)[]).every(key => addressToForm(address)[key].trim() === values[key].trim())
+  );
+
+  const startNewAddress = (kind: 'DELIVERY' | 'BILLING') => {
+    const values = { ...EMPTY, fullName: user?.name || '', email: user?.email || '' };
+    if (kind === 'DELIVERY') setShipping(values);
+    else setBilling(values);
+    setAddressMessage(null);
+  };
+
+  const saveCheckoutAddress = async (kind: 'DELIVERY' | 'BILLING', values: AddrType, makeDefault: boolean) => {
+    if (!user || savingAddress || isProcessing) return;
+    const existing = matchingAddress(kind, values);
+    if (existing && (!makeDefault || existing.isDefault)) {
+      setAddressMessage({ kind, success: true, text: 'This address is already saved in your account.' });
+      return;
+    }
+    setSavingAddress(kind);
+    setAddressMessage(null);
+    try {
+      const response = await fetch(existing ? `/api/account/addresses/${encodeURIComponent(existing.id)}` : '/api/account/addresses', {
+        method: existing ? 'PATCH' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...values, kind, label: existing?.label ?? null, isDefault: makeDefault }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unable to save this address.');
+      const saved = data as SavedAddress;
+      setSavedAddresses(previous => [...previous.filter(address => address.id !== saved.id).map(address =>
+        saved.isDefault && address.kind === kind ? { ...address, isDefault: false } : address
+      ), saved]);
+      setAddressMessage({ kind, success: true, text: saved.isDefault
+        ? `Default ${kind === 'DELIVERY' ? 'shipping' : 'billing'} address saved to your account.`
+        : 'Address saved to your account and selected for this order.' });
+    } catch (error) {
+      setAddressMessage({ kind, success: false, text: error instanceof Error ? error.message : 'Unable to save this address. Please try again.' });
+    } finally { setSavingAddress(null); }
+  };
 
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
@@ -331,6 +401,7 @@ export default function CartPageClient() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (savingAddress || isProcessing) return;
     if (!user) { router.push('/account'); return; }
     setIsProcessing(true);
     try {
@@ -507,16 +578,20 @@ export default function CartPageClient() {
                       {isDetecting ? 'Detecting...' : '📍 Auto-Detect'}
                     </button>
                   </div>
+                  <button type="button" className="btn btn-outline" style={{ marginBottom: '1rem' }} disabled={loadingAddresses || savingAddress !== null || isProcessing} onClick={() => startNewAddress('DELIVERY')}>Add New Address</button>
                   {loadingAddresses ? (
                     <div style={{ padding: '0.85rem 1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Loading saved addresses...</div>
                   ) : deliveryAddresses.length > 0 && (
                     <div style={{ marginBottom: '1rem' }}>
                       <label style={labelStyle}>Use saved delivery address</label>
                       <select
-                        defaultValue=""
+                        value={matchingAddress('DELIVERY', shipping)?.id ?? ''}
+                        disabled={savingAddress !== null}
                         onChange={e => {
                           const selected = deliveryAddresses.find(address => address.id === e.target.value);
                           if (selected) setShipping(addressToForm(selected));
+                          else startNewAddress('DELIVERY');
+                          setAddressMessage(null);
                         }}
                         style={inputStyle}
                       >
@@ -529,7 +604,10 @@ export default function CartPageClient() {
                       </select>
                     </div>
                   )}
-                  <AddressForm values={shipping} onChange={handleShippingChange} onCodeChange={(code) => setShipping(prev => ({ ...prev, phoneCode: code }))} />
+                  <AddressForm addressId={matchingAddress('DELIVERY', shipping)?.id} values={shipping} onChange={handleShippingChange} onCodeChange={(code) => setShipping(prev => ({ ...prev, phoneCode: code }))}
+                    isDefault={matchingAddress('DELIVERY', shipping)?.isDefault ?? false}
+                    onSave={user && !loadingAddresses ? makeDefault => saveCheckoutAddress('DELIVERY', shipping, makeDefault) : undefined} saving={savingAddress === 'DELIVERY'} />
+                  {addressMessage?.kind === 'DELIVERY' && <p role={addressMessage.success ? 'status' : 'alert'} style={{ marginTop: '.75rem', color: addressMessage.success ? 'var(--success)' : 'var(--error)' }}>{addressMessage.text}</p>}
                 </div>
 
                 <div className="card card-responsive-padding">
@@ -556,16 +634,20 @@ export default function CartPageClient() {
                   {billingSame
                     ? <div style={{ padding: '1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ Using same address as shipping</div>
                     : <>
+                        <button type="button" className="btn btn-outline" style={{ marginBottom: '1rem' }} disabled={loadingAddresses || savingAddress !== null || isProcessing} onClick={() => startNewAddress('BILLING')}>Add New Address</button>
                         {loadingAddresses ? (
                           <div style={{ padding: '0.85rem 1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Loading saved addresses...</div>
                         ) : billingAddresses.length > 0 && (
                           <div style={{ marginBottom: '1rem' }}>
                             <label style={labelStyle}>Use saved billing address</label>
                             <select
-                              defaultValue=""
+                              value={matchingAddress('BILLING', billing)?.id ?? ''}
+                              disabled={savingAddress !== null}
                               onChange={e => {
                                 const selected = billingAddresses.find(address => address.id === e.target.value);
                                 if (selected) setBilling(addressToForm(selected));
+                                else startNewAddress('BILLING');
+                                setAddressMessage(null);
                               }}
                               style={inputStyle}
                             >
@@ -578,7 +660,10 @@ export default function CartPageClient() {
                             </select>
                           </div>
                         )}
-                        <AddressForm values={billing} onChange={handleBillingChange} onCodeChange={(code) => setBilling(prev => ({ ...prev, phoneCode: code }))} />
+                        <AddressForm addressId={matchingAddress('BILLING', billing)?.id} values={billing} onChange={handleBillingChange} onCodeChange={(code) => setBilling(prev => ({ ...prev, phoneCode: code }))}
+                          isDefault={matchingAddress('BILLING', billing)?.isDefault ?? false}
+                          onSave={user && !loadingAddresses ? makeDefault => saveCheckoutAddress('BILLING', billing, makeDefault) : undefined} saving={savingAddress === 'BILLING'} />
+                        {addressMessage?.kind === 'BILLING' && <p role={addressMessage.success ? 'status' : 'alert'} style={{ marginTop: '.75rem', color: addressMessage.success ? 'var(--success)' : 'var(--error)' }}>{addressMessage.text}</p>}
                       </>
                   }
                 </div>
@@ -631,7 +716,7 @@ export default function CartPageClient() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', fontWeight: 800, fontSize: '1.25rem', paddingTop: '1rem', borderTop: '2px solid var(--gray-200)' }}>
                     <span>Total</span><span style={{ color: 'var(--brand-secondary)' }}>${finalTotal.toFixed(2)}</span>
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em' }} disabled={isProcessing}>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em' }} disabled={isProcessing || savingAddress !== null}>
                     {isProcessing ? 'Processing…' : 'Pay with Stripe'}
                   </button>
                   <button type="button" onClick={() => setShowCheckout(false)} style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
