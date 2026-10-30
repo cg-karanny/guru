@@ -47,6 +47,19 @@ model User {
   cartItems CartItem[]
   cartData  Json?      // Stores the whole cart (both custom & non-custom)
   addresses UserAddress[]
+  wishlistItems WishlistItem[]
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String
+  data      Json
+  createdAt DateTime @default(now())
+
+  @@unique([userId, key])
+  @@map("wishlist_items")
 }
 
 model Order {

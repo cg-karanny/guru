@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import WishlistButton from '@/components/WishlistButton';
 import { useCart } from '@/context/CartContext';
 
 type BlockType = 'paragraph' | 'heading' | 'bullet' | 'gap';
@@ -244,6 +245,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   ✓ Added to cart!
                 </div>
               )}
+              <WishlistButton item={{ id: product.id, name: product.name, price: product.sellingPrice ?? product.listingPrice, quantity: qty, image: product.imageUrl, category: 'Non-Customizable', stock: product.stock }} />
               <button onClick={handleAddToCart} disabled={product.stock === 0} className="btn btn-primary"
                 style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', opacity: product.stock === 0 ? 0.5 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}>
                 {product.stock === 0 ? 'Out of Stock' : ' Add to Cart'}

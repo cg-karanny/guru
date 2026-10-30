@@ -5,6 +5,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
 import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { SiteProvider } from '@/context/SiteContext';
 import CookieConsent from '@/components/CookieConsent/CookieConsent';
@@ -110,11 +111,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AuthProvider initialMediaCache={initialMediaCache}>
           <SiteProvider initialSettings={{ siteName, logoUrl, siteTagline, initialized: true }}>
             <CartProvider>
+              <WishlistProvider>
               <a href="#main-content" className="skip-link">Skip to content</a>
               <Navbar />
               <main id="main-content">{children}</main>
               <Footer />
               <CookieConsent />
+              </WishlistProvider>
             </CartProvider>
           </SiteProvider>
         </AuthProvider>
