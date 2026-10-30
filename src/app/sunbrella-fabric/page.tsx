@@ -1,12 +1,17 @@
 import React from 'react';
+import { getManagedSeo } from '@/lib/pageContent';
 import Image from 'next/image';
 import EditableMedia from '@/components/EditableMedia/EditableMedia';
 import styles from './Sunbrella.module.css';
 
-export const metadata = {
+const defaultMetadata = {
   title: 'Sunbrella Fabrics | Cushion Guru',
   description: 'Learn why Cushion Guru partners with Sunbrella to bring you the best in performance, durability, and style.',
 };
+
+export async function generateMetadata() {
+  return getManagedSeo('store-sunbrella-fabric', defaultMetadata);
+}
 
 export default function SunbrellaPage() {
   return (

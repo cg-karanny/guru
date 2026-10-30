@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import Link from 'next/link';
 import styles from './cleaning.module.css';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Cleaning Guide',
   description: 'Download the Cushion Guru cleaning guide and learn how to care for your Sunbrella® cushion covers.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-cleaning', defaultMetadata);
+}
 
 export default function CleaningPage() {
   return (

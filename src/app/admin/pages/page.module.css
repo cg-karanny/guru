@@ -1,0 +1,232 @@
+.contentCard {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1.5rem;
+  align-items: start;
+}
+
+.nestedFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+}
+
+.itemList {
+  display: grid;
+  gap: 1rem;
+}
+
+.itemCard {
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: var(--gray-50);
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.itemHeader strong {
+  color: var(--brand-primary);
+}
+
+.field {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.seoSection {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--gray-200);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+
+.seoSection h3 {
+  margin: 0;
+  color: var(--brand-primary);
+  font-size: 1.05rem;
+}
+
+.seoSection > p {
+  margin: -0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.seoSection .nestedFields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fieldLabel {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.8rem 0.9rem;
+  line-height: 1.55;
+}
+
+.textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.pageList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pageRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.pagePath {
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.pageActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.deleteButton {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.deleteButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.editorTitle {
+  margin-top: 1rem;
+  color: var(--brand-primary);
+  font-size: 1.2rem;
+}
+
+.editorHeader a {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: var(--brand-primary);
+}
+
+.listTitle {
+  margin-bottom: 1rem;
+  color: var(--brand-primary);
+  font-size: 1.2rem;
+}
+
+.statusMessage {
+  margin-top: 1rem;
+}
+
+.successMessage {
+  color: #15803d;
+}
+
+.errorMessage {
+  color: #b42318;
+}
+
+@media (max-width: 640px) {
+  .fieldGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .seoSection .nestedFields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .contentCard {
+    padding: 1rem;
+  }
+
+  .pageActions {
+    width: 100%;
+  }
+
+  .pageActions button {
+    flex: 1;
+  }
+}
+.richTextEditor {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+}
+
+.richTextToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  padding: .55rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: #f8fafc;
+}
+
+.richTextToolbar button {
+  min-height: 2rem;
+  padding: .35rem .6rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.richTextArea {
+  min-height: 150px;
+  padding: .85rem;
+  outline: none;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+

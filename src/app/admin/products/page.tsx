@@ -310,6 +310,10 @@ export default function AdminProductsPage() {
   const [listingPrice, setListingPrice] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [seoTags, setSeoTags] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
   const [stock, setStock] = useState('0');
   const [file, setFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -318,6 +322,7 @@ export default function AdminProductsPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [showRich, setShowRich] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
+  const [showSeo, setShowSeo] = useState(false);
 
   // ── Linked Product ──
   const [linkedProducts, setLinkedProducts] = useState<any[]>([]);
@@ -351,15 +356,21 @@ export default function AdminProductsPage() {
     setEditingId(p.id); setName(p.name); setSku(p.sku);
     setListingPrice(p.listingPrice.toString()); setSellingPrice(p.sellingPrice.toString());
     setDescription(p.description); setStock(p.stock?.toString() ?? '0'); setFile(null);
+    setMetaTitle(p.metaTitle || `${p.name} | Cushion Guru`);
+    setMetaDescription(p.metaDescription || p.description || '');
+    setSeoTags(p.seoTags || '');
+    setImageAlt(p.imageAlt || p.name || '');
     try { setRichBlocks(p.richDescription ? JSON.parse(p.richDescription) : []); } catch { setRichBlocks([]); }
     try { setFaqs(p.faqData ? JSON.parse(p.faqData) : []); } catch { setFaqs([]); }
     setShowRich(true); setShowFaq(true);
+    setShowSeo(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const handleCancel = () => {
     setEditingId(null); setName(''); setSku(''); setListingPrice(''); setSellingPrice('');
+    setMetaTitle(''); setMetaDescription(''); setSeoTags(''); setImageAlt('');
     setDescription(''); setStock('0'); setFile(null); setRichBlocks([]); setFaqs([]);
-    setShowRich(false); setShowFaq(false);
+    setShowRich(false); setShowFaq(false); setShowSeo(false);
     const fi = document.getElementById('prodImg') as HTMLInputElement;
     if (fi) fi.value = '';
   };
@@ -373,6 +384,8 @@ export default function AdminProductsPage() {
     fd.append('name', name); fd.append('sku', sku); fd.append('description', description);
     fd.append('richDescription', JSON.stringify(richBlocks));
     fd.append('faqData', JSON.stringify(faqs));
+    fd.append('metaTitle', metaTitle); fd.append('metaDescription', metaDescription);
+    fd.append('seoTags', seoTags); fd.append('imageAlt', imageAlt);
     fd.append('listingPrice', listingPrice); fd.append('sellingPrice', sellingPrice); fd.append('stock', stock);
     if (file) fd.append('image', file);
     try {
@@ -483,6 +496,10 @@ export default function AdminProductsPage() {
                     <label className="form-label">Product Image {editingId && <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(leave blank to keep current)</span>}</label>
                     <input id="prodImg" type="file" className="form-control" accept="image/*" onChange={e => setFile(e.target.files?.[0] || null)} {...(!editingId && { required: true })} style={{ background: 'var(--gray-50)' }} />
                   </div>
+                  <div className="form-group">
+                    <label className="form-label">Product image alt text</label>
+                    <input className="form-control" value={imageAlt} onChange={e => setImageAlt(e.target.value)} placeholder={name || 'Describe the product image'} />
+                  </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label className="form-label">Short Description <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(shown on product card)</span></label>
@@ -497,6 +514,24 @@ export default function AdminProductsPage() {
                 <CollapsibleSection title="❓ FAQ Section" open={showFaq} onToggle={() => setShowFaq(s => !s)}
                   hint="FAQ items appear on the product detail page. Users click the arrow to reveal each answer.">
                   <FaqEditor faqs={faqs} setFaqs={setFaqs} />
+                </CollapsibleSection>
+
+                <CollapsibleSection title="🔍 Search engine optimization" open={showSeo} onToggle={() => setShowSeo(s => !s)}>
+                  <div className="grid-2" style={{ gap: '1.25rem' }}>
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="form-label">Meta title</label>
+                      <input className="form-control" value={metaTitle} onChange={e => setMetaTitle(e.target.value)} placeholder={`${name || 'Product name'} | Cushion Guru`} />
+                    </div>
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="form-label">Meta description</label>
+                      <textarea className="form-control" rows={3} value={metaDescription} onChange={e => setMetaDescription(e.target.value)} placeholder={description || 'Describe this product for search results'} />
+                    </div>
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="form-label">Tags</label>
+                      <input className="form-control" value={seoTags} onChange={e => setSeoTags(e.target.value)} placeholder="custom cushions, outdoor, Sunbrella" />
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Separate tags with commas.</span>
+                    </div>
+                  </div>
                 </CollapsibleSection>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>

@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import styles from './faq.module.css';
 import FAQAccordion from './FAQAccordion';
 import Newsletter from '@/components/home/Newsletter';
+import { getManagedPageContent } from '@/lib/pageContent';
+import { pageContentDefaults } from '@/lib/pageContentDefaults';
 
-export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | Custom Cushions | Cushion Guru',
-  description: 'Common questions about custom cushions, shipping, measurements, fabrics & materials. Get answers from Cushion Guru experts.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getManagedPageContent('faq', pageContentDefaults.faq);
+  return { title: seo.metaTitle, description: seo.metaDescription, category: seo.category, keywords: [...seo.tags] };
+}
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -71,22 +73,31 @@ const jsonLd = {
   ]
 };
 
-export default function FAQPage() {
+export default async function FAQPage() {
+  const content = await getManagedPageContent('faq', pageContentDefaults.faq);
+  const dynamicJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: content.faqs.map(item => ({
+      '@type': 'Question', name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  };
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dynamicJsonLd) }}
       />
       <section className={styles.hero}>
         <div className="container text-center">
-          <h1>Frequently Asked Questions About Custom Cushions</h1>
-          <p>Everything you need to know about our custom cushions</p>
+          <h1>{content.title}</h1>
+          <p>{content.subtitle}</p>
         </div>
       </section>
       <section className={`section-padding ${styles.section}`}>
         <div className="container-narrow">
-          <FAQAccordion />
+          <FAQAccordion faqs={content.faqs} />
         </div>
       </section>
       <Newsletter />

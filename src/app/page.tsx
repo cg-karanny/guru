@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import { prisma } from '@/lib/prisma';
 import HeroSlider from '@/components/HeroSlider/HeroSlider';
 import FeatureBanner from '@/components/home/FeatureBanner';
@@ -15,7 +16,7 @@ import PremiumSection from '@/components/home/PremiumSection';
 import ReadyBanner from '@/components/home/ReadyBanner';
 import Newsletter from '@/components/home/Newsletter';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Custom Cushions | Factory Direct Pricing & Free Shipping | Cushion Guru',
   description: 'Premium custom cushions for indoor, outdoor, RV, boat & pet use. Sunbrella® fabrics, factory-direct pricing, 3-week delivery, free worldwide shipping. Get perfect-fit cushions today.',
   keywords: 'custom cushions, outdoor cushions, sunbrella cushions, replacement cushions, made to order cushions, luxury cushion covers',
@@ -33,6 +34,10 @@ export const metadata: Metadata = {
     description: 'Premium custom cushions with Sunbrella fabrics. Free shipping worldwide. 3-week delivery. 99% customer satisfaction.',
   }
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-home', defaultMetadata);
+}
 
 const jsonLd = {
   "@context": "https://schema.org",

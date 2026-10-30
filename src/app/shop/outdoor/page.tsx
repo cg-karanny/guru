@@ -1,13 +1,18 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import Link from 'next/link';
 import Newsletter from '@/components/home/Newsletter';
 import styles from './shop.module.css';
 import EditableMedia from '@/components/EditableMedia/EditableMedia';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Custom Outdoor Cushions | Weather-Resistant Sunbrella Fabrics | Cushion Guru',
   description: 'Durable outdoor patio cushions with Sunbrella fabrics. UV-fade resistant, water-repellent, mold-resistant. Custom sizes for any furniture. Fast shipping. Shop today.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-shop-outdoor', defaultMetadata);
+}
 
 export default function OutdoorPage() {
   return (

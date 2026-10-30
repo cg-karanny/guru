@@ -38,11 +38,11 @@ const FAQS = [
   { q: 'What is your process for resolving issues with damaged or incorrect orders?', a: 'Contact our customer support team immediately. We will work quickly to resolve any issues and ensure your complete satisfaction.' },
 ];
 
-export function FAQAccordion() {
+export function FAQAccordion({ faqs = FAQS }: { faqs?: readonly { q: string; a: string }[] }) {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <div className={styles.accordion}>
-      {FAQS.map((faq, i) => (
+      {faqs.map((faq, i) => (
         <div key={i} className={`${styles.item} ${open === i ? styles.open : ''}`}>
           <button
             className={styles.question}
@@ -57,7 +57,7 @@ export function FAQAccordion() {
           </button>
           {open === i && (
             <div className={styles.answer} role="region" aria-labelledby={`faq-${i}`}>
-              <p>{faq.a}</p>
+              <div dangerouslySetInnerHTML={{ __html: faq.a }} />
             </div>
           )}
         </div>
