@@ -1,10 +1,15 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import ShopPage from '@/components/ShopPage/ShopPage';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Custom Indoor Cushions | Made-to-Order Sofa & Chair Cushions | Cushion Guru',
   description: 'Handcrafted custom indoor cushions for sofas, chairs, and benches. 500+ fabric options, premium foam, shipped in 3-4 weeks. Free measurements consultation. Order online.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-shop-indoor', defaultMetadata);
+}
 
 const jsonLd = {
   "@context": "https://schema.org",

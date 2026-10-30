@@ -1,10 +1,15 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import ShopPage from '@/components/ShopPage/ShopPage';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Custom RV Cushions | Durable Travel Seating Solutions | Cushion Guru',
   description: 'Custom RV cushions for motorhomes, travel trailers & campers. Durable, fade-resistant fabrics. Perfect fit guaranteed. Order your replacement cushions online.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-shop-rv', defaultMetadata);
+}
 
 export default function RVPage() {
   return (

@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import styles from './measure.module.css';
 import EditableMedia from '@/components/EditableMedia/EditableMedia';
+import { getManagedPageContent } from '@/lib/pageContent';
+import { pageContentDefaults } from '@/lib/pageContentDefaults';
 
-export const metadata: Metadata = {
-  title: 'How to Measure for Custom Cushions | Step-by-Step Guide | Cushion Guru',
-  description: 'Complete guide on how to measure for custom cushions. Accurate measurement tips, video tutorial, common mistakes to avoid. Perfect fit guaranteed.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getManagedPageContent('how-to-measure', pageContentDefaults['how-to-measure']);
+  return { title: seo.metaTitle, description: seo.metaDescription, category: seo.category, keywords: [...seo.tags] };
+}
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -124,7 +126,8 @@ const RULES = [
   { num: '4', title: 'Round to the Nearest 0.5 Inch', text: 'Don\'t guess. If you are between inches, round down for a snug fit inside a frame, or round up if the cushion sits on top.' },
 ];
 
-export default function HowToMeasurePage() {
+export default async function HowToMeasurePage() {
+  const content = await getManagedPageContent('how-to-measure', pageContentDefaults['how-to-measure']);
   return (
     <>
       <script
@@ -134,22 +137,22 @@ export default function HowToMeasurePage() {
       {/* Hero */}
       <section className={styles.hero}>
         <div className="container text-center">
-          <h1>How to Measure for Custom Cushions | Accurate Sizing Guide</h1>
-          <p>Perfect fit starts with perfect measurements. Follow this guide to measure your furniture frames accurately.</p>
+          <h1>{content.title}</h1>
+          <p>{content.subtitle}</p>
         </div>
       </section>
 
       {/* Critical rules */}
       <section className={`section-padding-sm ${styles.rules}`}>
         <div className="container">
-          <h2 className={styles.sectionHead}>Critical Measuring Rules</h2>
+          <h2 className={styles.sectionHead}>{content.rulesTitle}</h2>
           <div className={styles.rulesGrid}>
-            {RULES.map(r => (
-              <div key={r.num} className={styles.rule}>
-                <div className={styles.ruleNum}>{r.num}</div>
+            {content.rules.map((r, index) => (
+              <div key={`${index}-${r.title}`} className={styles.rule}>
+                <div className={styles.ruleNum}>{index + 1}</div>
                 <div>
                   <h3>{r.title}</h3>
-                  <p>{r.text}</p>
+                  <div dangerouslySetInnerHTML={{ __html: r.text }} />
                 </div>
               </div>
             ))}
@@ -158,19 +161,24 @@ export default function HowToMeasurePage() {
       </section>
 
       {/* Shapes */}
-      {SHAPES.map((shape, i) => (
+      {content.shapes.map((managedShape, i) => {
+        const shape = { ...(SHAPES[i] ?? { img: managedShape.name, steps: [] }), ...managedShape };
+        const imageKey = shape.name.toLowerCase().replace(/[^a-z]/g, '');
+        const imageAlts = content.seo.imageAlts as Record<string, string>;
+        const imageAlt = imageAlts[imageKey] || shape.img;
+        return (
         <section key={i} className={`section-padding-sm ${i % 2 === 0 ? styles.sectionLight : styles.sectionWhite}`}>
           <div className="container">
             <div className={styles.shapeGrid}>
               <div className={styles.shapeText}>
                 <h2>{shape.name}</h2>
                 <ol className={styles.steps}>
-                  {shape.steps.map((step, j) => <li key={j}>{step}</li>)}
+                  {shape.steps.map((step, j) => <li key={j} dangerouslySetInnerHTML={{ __html: step }} />)}
                 </ol>
               </div>
               <EditableMedia
-                mediaKey={`measure_${shape.name.toLowerCase().replace(/[^a-z]/g, '')}`}
-                alt={shape.img}
+                mediaKey={`measure_${imageKey}`}
+                alt={imageAlt}
                 type="image"
                 className={`img-placeholder ${styles.shapeImg}`}
                 priority={i === 0}
@@ -181,13 +189,13 @@ export default function HowToMeasurePage() {
             </div>
           </div>
         </section>
-      ))}
+      ); })}
 
       {/* CTA */}
       <section className={styles.ctaSection}>
         <div className="container text-center">
-          <h2>Still not sure?</h2>
-          <p>Complex shapes like papasan chairs or antique furniture can be tricky. You can always send us a template or photos.</p>
+          <h2>{content.ctaTitle}</h2>
+          <div dangerouslySetInnerHTML={{ __html: content.ctaText }} />
           <div className={styles.ctaButtons}>
             <Link href="/contact" className="btn btn-accent btn-lg">Contact Support</Link>
             {/* <a href="/Measuring_Template_Guide.pdf" download className="btn btn-ghost btn-lg">Download Template Guide</a> */}

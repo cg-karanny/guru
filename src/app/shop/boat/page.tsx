@@ -1,10 +1,15 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import ShopPage from '@/components/ShopPage/ShopPage';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Custom Boat Cushions | Marine-Grade Sunbrella Fabrics | Cushion Guru',
   description: 'Marine-grade custom boat cushions built for saltwater & sun. Sunbrella fabrics, mold-resistant, easy to clean. Ships in 3-4 weeks. Customize online.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-shop-boat', defaultMetadata);
+}
 
 export default function BoatPage() {
   return (

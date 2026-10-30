@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
     const description = formData.get('description') as string;
     const richDescription = formData.get('richDescription') as string | null;
     const faqData = formData.get('faqData') as string | null;
+    const metaTitle = formData.get('metaTitle') as string | null;
+    const metaDescription = formData.get('metaDescription') as string | null;
+    const seoTags = formData.get('seoTags') as string | null;
+    const imageAlt = formData.get('imageAlt') as string | null;
     const listingPriceStr = formData.get('listingPrice') as string;
     const sellingPriceStr = formData.get('sellingPrice') as string;
     const stockStr = formData.get('stock') as string;
@@ -55,6 +59,10 @@ export async function POST(req: NextRequest) {
         description,
         richDescription: richDescription || null,
         faqData: faqData || null,
+        metaTitle: metaTitle?.trim() || null,
+        metaDescription: metaDescription?.trim() || null,
+        seoTags: seoTags?.trim() || null,
+        imageAlt: imageAlt?.trim() || null,
         listingPrice,
         sellingPrice,
         imageUrl,

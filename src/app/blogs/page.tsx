@@ -1,13 +1,18 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import Link from 'next/link';
 import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
 import styles from './blogs.module.css';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Blog | Cushion Guru',
   description: 'Read the latest articles from Cushion Guru on custom cushions, Sunbrella fabrics, home décor, and care tips.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-blogs', defaultMetadata);
+}
 
 export const dynamic = 'force-dynamic';
 

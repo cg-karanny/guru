@@ -149,6 +149,10 @@ model Product {
   description     String
   richDescription String?    // JSON string: structured content blocks
   faqData         String?    // JSON string: [{q, a}]
+  metaTitle       String?
+  metaDescription String?
+  seoTags         String?
+  imageAlt        String?
   listingPrice    Float
   sellingPrice    Float
   imageUrl        String

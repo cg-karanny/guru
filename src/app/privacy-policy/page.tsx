@@ -1,10 +1,20 @@
 import type { Metadata } from 'next';
 import styles from './privacy.module.css';
+import { getManagedPageContent } from '@/lib/pageContent';
+import { pageContentDefaults } from '@/lib/pageContentDefaults';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Cushion Guru Privacy Policy — how we collect, use, and protect your personal information.',
+type PrivacyPageContent = {
+  seo: { metaTitle: string; metaDescription: string; category: string; tags: string[]; imageAlts: Record<string, string> };
+  title: string;
+  subtitle: string;
+  introduction: string;
+  sections: { title: string; text?: string; items?: { label: string; text: string }[] }[];
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getManagedPageContent<PrivacyPageContent>('privacy-policy', pageContentDefaults['privacy-policy'] as unknown as PrivacyPageContent);
+  return { title: seo.metaTitle, description: seo.metaDescription, category: seo.category, keywords: [...seo.tags] };
+}
 
 const SECTIONS = [
   {
@@ -47,29 +57,30 @@ const SECTIONS = [
   },
 ];
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const content = await getManagedPageContent<PrivacyPageContent>('privacy-policy', pageContentDefaults['privacy-policy'] as unknown as PrivacyPageContent);
   return (
     <>
       <section className={styles.hero}>
         <div className="container text-center">
-          <h1>Privacy Policy</h1>
-          <p>We are committed to protecting the privacy and security of your personal information.</p>
+          <h1>{content.title}</h1>
+          <p>{content.subtitle}</p>
         </div>
       </section>
       <section className={`section-padding ${styles.section}`}>
         <div className="container-narrow">
           <div className={styles.intro}>
-            By accessing or using our Site and services, you agree to the terms of this Privacy Policy.
+            <div dangerouslySetInnerHTML={{ __html: content.introduction }} />
           </div>
-          {SECTIONS.map((s, i) => (
+          {content.sections.map((s, i) => (
             <div key={i} className={styles.policySection}>
               <h2>{s.title}</h2>
-              {s.text && <p>{s.text}</p>}
+              {s.text && <div dangerouslySetInnerHTML={{ __html: s.text }} />}
               {s.items && (
                 <ul className={styles.list}>
                   {s.items.map((item, j) => (
                     <li key={j}>
-                      <strong>{item.label}:</strong> {item.text}
+                      <strong>{item.label}:</strong> <span dangerouslySetInnerHTML={{ __html: item.text }} />
                     </li>
                   ))}
                 </ul>

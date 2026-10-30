@@ -1,13 +1,18 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import Link from 'next/link';
 import Newsletter from '@/components/home/Newsletter';
 import styles from './petbed.module.css';
 import EditableMedia from '@/components/EditableMedia/EditableMedia';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Luxury Custom Pet Beds | Orthopedic Comfort & Style | Cushion Guru',
   description: 'Luxury custom pet beds with memory foam & premium fabrics. Washable, durable, stylish. Perfect size for your pet. Free design consultation. Shop now.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-shop-pet-bed', defaultMetadata);
+}
 
 const BED_TYPES = [
   { label: 'SMALL BED BREEDS', examples: 'French Bulldog, Pug, Dachshund, Corgi', emoji: '' },

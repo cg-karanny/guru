@@ -4,13 +4,16 @@ import Newsletter from '@/components/home/Newsletter';
 import styles from './about.module.css';
 import EditableMedia from '@/components/EditableMedia/EditableMedia';
 import AboutNewsletterForm from './AboutNewsletterForm';
+import { getManagedPageContent } from '@/lib/pageContent';
+import { pageContentDefaults } from '@/lib/pageContentDefaults';
 
-export const metadata: Metadata = {
-  title: 'About Cushion Guru',
-  description: 'Learn about Cushion Guru LLC, the New York leader in custom comfort cushions powered by Sunbrella® fabrics.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getManagedPageContent('about', pageContentDefaults.about);
+  return { title: seo.metaTitle, description: seo.metaDescription, category: seo.category, keywords: [...seo.tags] };
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const content = await getManagedPageContent('about', pageContentDefaults.about);
   return (
     <>
       {/* Hero */}
@@ -19,12 +22,12 @@ export default function AboutPage() {
           <div className={styles.heroGrid}>
             <div>
               <span className="badge">Our Story</span>
-              <h1>About Cushion Guru</h1>
-              <p>Cushion Guru LLC: The New York Leader in Custom Comfort</p>
+              <h1>{content.heroTitle}</h1>
+              <p>{content.heroSubtitle}</p>
             </div>
             <EditableMedia
               mediaKey="about_hero"
-              alt="High quality custom cushions being manufactured in our New York facility"
+              alt={content.seo.imageAlts.hero}
               type="image"
               className={`img-placeholder ${styles.heroImg}`}
               priority={true}
@@ -42,16 +45,16 @@ export default function AboutPage() {
                 {/* 🎯 */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 512 512"><g strokeWidth="0"><path d="M231.5 1.1c-59.7 6.1-114.4 32-156.4 74-72.5 72.4-94.5 179.4-56.9 275.8 12.1 30.9 32.3 61.4 56.9 86 50.4 50.5 118.6 77.3 189.4 74.7 38.2-1.4 70.7-9.4 104-25.6 20.2-9.8 44.7-26.3 47.3-31.6 2-4.2.7-8.9-3.1-11.7-4.7-3.6-8.5-2.7-18.9 4.8-30.9 22.2-65 36-104 42.1-16 2.5-50.8 2.5-67.3 0-42.4-6.5-80.1-22.9-114-49.6-18.2-14.4-40.4-39.5-53.5-60.5-15.9-25.6-27.7-57.9-32.6-89.5-2.5-16.1-2.5-51.9 0-68C32.9 154.5 69.8 96.7 126 59.5c29.2-19.3 61.2-31.7 96-37.1 16.1-2.5 51.9-2.5 68 0 29.6 4.6 59.3 14.8 83 28.6 4.1 2.4 7.7 4.5 7.9 4.7.3.2-1.1 2-3.1 4.1-2 2-4.1 4.7-4.7 5.9-.7 1.4-1.1 11.7-1.1 30.9v28.8l-2.7 2.8c-1.5 1.5-3.1 2.8-3.6 2.8s-3.2-2-6-4.4c-11.7-9.9-34.3-22.5-49.2-27.5-24.1-8-48.2-10.7-72.3-8-77.3 8.4-138.7 69.8-147.1 147.1-8.4 77 38.2 149.9 111.4 174.7 24.3 8.1 46.8 10.7 71.3 8 90.8-9.8 156.8-91.8 147.2-182.7-1.3-11.6-5.9-30.8-9.9-41.3-6-15.6-16.4-33.6-25.7-44.6-2.4-2.8-4.4-5.5-4.4-6s1.3-2.1 2.8-3.6l2.8-2.7h28.8c19.2 0 29.5-.4 30.9-1.1 1.2-.6 3.9-2.7 5.9-4.7 2.1-2 3.9-3.4 4.1-3.1.2.2 2.3 3.8 4.7 7.9 13.8 23.7 24 53.5 28.6 83 2.5 16 2.5 50.8.1 67.5-4.3 28.6-15.1 60.4-28.2 82.6-5.1 8.6-5.8 11.3-4 15.6 2.5 5.9 10.6 7.6 15.3 3.2 2.6-2.3 10.7-16.8 16.1-28.5 22.9-50.1 28.8-106.8 16.9-162.4-2.7-12.7-10.5-36.1-16.3-49-3.9-8.6-12.3-24.4-17.9-33.2-.9-1.6 1.5-4.4 18.6-21.6 10.8-10.8 20.1-20.7 20.7-21.9 1.4-2.8 1.4-5.6-.1-8.8-2.3-5.1-4.5-5.5-32.8-5.5h-26V34c0-17.9-.4-26.7-1.2-28.5-2.1-4.6-8.5-6.7-13.1-4.4-1.2.6-11.1 9.9-21.9 20.7-17.2 17.1-20 19.5-21.6 18.6-31.9-20-64.7-32.1-102.2-37.9-12.5-1.9-47.7-2.8-60.5-1.4m201.9 74.2c1.9 4 5.6 4.7 25.3 4.7h18.8l-20 20-20 20H392V74.5l19.8-19.8L431.5 35l.5 19.2c.3 10.6.9 20.1 1.4 21.1M285.2 113c22.5 4.7 47.5 16.6 62.8 29.9l3.5 3-24.6 24.6-24.6 24.7-7.9-4.5c-17.8-10.3-38.7-13.2-57.9-8.2-20.5 5.5-39 20.7-48.5 40-5.9 12.1-7.4 18.9-7.4 33.5s1.5 21.4 7.4 33.5c9.6 19.5 27.8 34.4 49 40.2 9 2.4 29 2.4 38-.1 9.4-2.5 21.6-8.7 28.7-14.6 29.3-23.8 36.6-64.4 17.6-97.4l-4.5-7.9 24.7-24.6 24.6-24.6 3 3.5c13.4 15.4 25.1 40.1 30.1 63.3 3.1 14.7 3.1 42.7 0 57.4C386.6 343 343 386.6 284.7 399.2c-14.6 3.1-42.8 3.1-57 0-59.3-13.1-102.2-55.9-114.9-114.5-3.1-14.7-3.1-42.7 0-57.4C126.2 165.1 175 119.8 238 111c10.4-1.4 36.1-.4 47.2 2m-18.6 88.1c6 1.1 20.4 7.1 20.4 8.6 0 .4-9 9.8-19.9 20.8-12.6 12.6-20.2 21-20.6 22.7-1.9 7.7 4.6 14.2 12.3 12.3 1.7-.4 10.1-8 22.7-20.6 11-10.9 20.4-19.9 20.8-19.9 1.6 0 7.6 14.7 8.8 21.5 2.2 12.6-.6 27.1-7.4 38.7-3.3 5.7-12.8 15.2-18.5 18.5-22.7 13.3-50.3 9.9-68.6-8.3-17.1-17.2-21.3-42-10.7-63.8 11-22.7 35.7-35.1 60.7-30.5" /><path d="M435.1 411.4c-8.7 4.8-5 18.6 4.9 18.6 5.1 0 10-4.9 10-9.9 0-7.5-8.3-12.4-14.9-8.7" /></g></svg>
               </div>
-              <h2>Our Mission</h2>
-              <p>At Cushion Guru LLC, a New York-based company, we are passionate about delivering uniquely crafted comfort and style. We achieve this through customized cushion solutions that enhance every seating experience, transforming your vision into a reality.</p>
+              <h2>{content.missionTitle}</h2>
+              <div dangerouslySetInnerHTML={{ __html: content.mission }} />
             </div>
             <div className={styles.missionCard}>
               <div className={styles.missionIcon}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 512 512"><g strokeWidth="0"><path d="M95 19.9c-22.7 7-50 41.6-62.4 79.1-5.2 15.8-6.9 26.4-6.4 40.5.3 10.5.7 12.8 3.2 18 3.2 7.1 5.7 10 11.1 12.8 7.9 4.1 19.8 1.9 31.6-5.9 2.6-1.7 2.9-1.6 41 16.1 21.1 9.8 44.8 20.7 52.7 24.2 17.5 7.8 31.5 14.8 41.9 20.9 11.6 6.9 18.8 10.3 24.6 11.8l5.2 1.3.2 6.5c.2 8.3 1.6 13.5 4.9 18.3 2.1 3.1 2.3 4 1.2 5-.7.7-35.5 30.4-77.3 65.9-41.8 35.6-76.6 65.7-77.4 67-1.3 2.1-1.3 2.7.2 5 2.7 4.1 5.8 3.4 13.4-3.1 11.7-9.9 93.5-79.6 121.8-103.8 14.9-12.7 27.5-23.4 28.1-23.8.6-.3 3.6.2 6.7 1.3s6.2 2 6.9 2c1.1 0 1.2 20.5 1 105.5-.3 81.6-.1 105.9.8 107 .7.8 2.5 1.5 4.1 1.5 6.1 0 5.8 5.5 6.1-109.3.3-112.1.1-106.6 4.9-106.7.9 0 26.9 26.1 57.8 58 41.9 43.2 56.8 58 58.5 58 2.7 0 5.6-2.9 5.6-5.6 0-1.3-20.5-23.1-55.5-59.2-30.5-31.5-55.5-57.5-55.5-57.8s1.1-2 2.5-3.8c4.7-6.2 6.9-12.6 6.9-20.4 0-3.9.2-7.2.4-7.2s11 6.1 24 13.7c13 7.5 27.3 15.3 31.7 17.4 16.5 7.7 28.6 7.5 39.4-.5l3.4-2.5 3.6 1.9c2 1 9.9 5.4 17.6 9.7l14 7.8-.3 7c-.2 6 .1 7.6 2 10.5 6.9 10.3 20.9 8.6 31.8-3.7 4.3-4.9 11.9-19.6 13.9-26.8 1.7-6.1 1.3-14.5-.8-19.1-4.5-9.9-16.3-12.2-25.1-4.8l-2.9 2.5-17.3-8.7c-9.5-4.7-17.5-8.8-17.6-8.9-.2-.2.1-2.7.7-5.6 1.5-7 .5-12.9-3-18.3-3.9-5.8-8.4-8.7-22-14.5-6.3-2.6-16.8-7.8-23.4-11.5-16.1-9-62.5-32.2-67.3-33.7-3.7-1.1-3.9-1.4-5-7-.6-3.3-2-7.2-3.1-8.8-2.3-3.3-23.3-14.5-85.6-46.1-22-11.2-47.4-24.5-56.5-29.6s-19.1-10.3-22.3-11.5c-4.5-1.7-5.9-2.7-6.3-4.8-3.7-16.7-11.1-24.2-24-24-3.2 0-7 .4-8.4.8M113.5 30c5.3 5.2 7 11.4 6.9 25.5 0 9.4-.6 14.3-2.6 22.6-9 36.1-33.2 72.6-55.7 83.6-17.1 8.4-27.8.4-28.9-21.5-1.4-29.7 16.3-72.2 40.3-96.7 12-12.3 22-17.8 31.3-17.2 4.4.3 5.8.9 8.7 3.7m20.8 30.1c2.3 1.2 7.9 4.2 12.5 6.7l8.2 4.6 1.9 6c1.2 3.8 2.5 6.2 3.5 6.4 1.8.4 2.1-1.5.6-5.4-.6-1.5-.8-2.9-.6-3.2 1.3-1.2 5.3 3 6.5 6.8 1.1 3.8 3.4 6 4.8 4.7.3-.3.1-1.9-.5-3.6l-1.1-3 3.4 1.6c2.7 1.3 4 3 6.6 9 2.9 6.6 4.5 8.4 6.1 6.7.4-.3-.5-3-1.8-6L182 86l4.4 2.2c4 1.9 4.5 2.6 5.7 7.5 1.2 5 3.1 7.5 4.6 6 .3-.4.1-2.4-.5-4.7-1.1-4.5-.9-4.7 3.2-2.2 2.3 1.4 4 4.3 7.5 12.7 4.4 10.3 7.1 14 7.1 9.7 0-1-1.3-5.2-3-9.2-1.6-4-3-7.7-3-8.2 0-.4 2.6.5 5.8 2.1 5.6 2.8 5.8 3 8 10.1 2.1 6.4 4.3 9.3 5.9 7.7.3-.3-.2-2.7-1.1-5.3-2.1-6.4-2.1-6.7 1.3-4.9 2 1 3.5 3 4.7 6.2 3.4 9.4 4.3 11.3 5.3 11.3 2 0 2.1-2 .1-7.1-1.1-2.9-1.8-5.4-1.6-5.6s2 .4 3.9 1.3c3.4 1.6 3.8 2.4 7.2 13.1 2.4 7.7 4 11.3 5 11.3 2.1 0 1.9-2.6-1-11-1.4-4-2.5-7.7-2.5-8.2s2.1.3 4.8 1.6c4.7 2.4 4.8 2.5 6.6 10 1.1 4.2 2.5 8.1 3.3 8.7 2.2 1.9 2.6-1.5.8-7.7-.9-3.1-1.5-5.8-1.3-6 .8-.8 6.9 3.7 6.3 4.6-1 1.5 5.5 20.1 7.1 20.7 2.7 1 2.6-.6-.5-9.8-1.7-5.1-2.9-9.4-2.7-9.6.9-1 15.2 7.6 16.3 9.8 1.7 3.2 1.6 8.5-.3 17.5-6.1 29.7-26.1 61.3-41.7 65.9-2.8.8-6 1.5-7.1 1.5-4.5-.1-15.7-5-28.8-12.7-7.6-4.4-22-11.8-32-16.3-10.1-4.6-33.4-15.3-51.8-23.8s-35.9-16.5-38.8-17.8l-5.3-2.4 5.1-5.8c12.2-13.6 25.7-37.1 31.9-55.7 3.2-9.7 7.1-27.4 7.1-32.4 0-3.7.7-3.8 6.3-1m180.2 102.8 8.9 4.6 1.9 5.7c1.2 3.8 2.4 5.8 3.4 5.8 1.2 0 1.4-.7 1-3.3-.3-1.7-.9-4-1.3-5-.6-1.7-.4-1.7 3.5.3 3.7 1.8 4.8 3.2 7.7 9.6 1.8 4.1 3.8 7.4 4.3 7.4 2 0 2-2 .1-6.6-1.1-2.6-1.9-4.8-1.7-5 .1-.2 1.7.6 3.5 1.8 2.7 1.7 3.6 3.3 5.4 9.5 1.9 6.7 3.9 9.6 5.4 8 .3-.3-.2-3.1-1.1-6.2-.9-3.2-1.4-5.9-1.1-6.2s2.9.8 5.8 2.4c5.1 3 5.4 3.3 8.8 12.4 2.4 6.2 4.1 9.5 5.3 9.7 2.2.5 2.2-.3-.8-8.3-1.4-3.7-2.4-6.9-2.2-7.1.2-.3 2.4.7 4.8 2 3.9 2.2 4.7 3.3 7.3 10.1 2.7 7 4.7 9.7 6.3 8.2.3-.4-.5-3.1-1.7-6.2s-2-5.8-1.8-6c.3-.3 2.7.4 5.5 1.5 4.9 2.1 5 2.2 6.8 9.1 1.8 7.1 2.9 8.9 4.7 7.1.6-.6.4-2.8-.6-6.2-.9-3-1.4-5.6-1.1-5.9.9-.9 8.9 5.4 11.2 8.8 4.2 6.2 2.5 15.6-5.7 32.6-10.2 21.1-24 25.8-45.5 15.5-8.4-4-76.5-43.1-81-46.5l-2.7-2 5.4-8.6c6.4-10.1 12.8-25.9 16-39.2 2.6-11.3 1.5-11 15.3-3.8M283 226.7c10.9 6.8 12.9 10 13 19.9 0 11.1-6.8 20.5-17.4 24-11.6 3.9-25.5-1.8-31.1-12.7-3.3-6.2-3.2-19.9.2-19.9 3.5 0 14.1-6.2 19.3-11.3 3-3 5.8-5.5 6.1-5.6.4-.1 4.8 2.5 9.9 5.6m174.9 35.9c5.5 7-.7 19.4-9.8 19.4-2.6 0-8.2-2.6-21.9-10.2-10-5.6-18.1-10.4-18-10.7.2-.3 2.5-5 5.1-10.3l4.9-9.7 18.8 9.4c11.5 5.8 19.6 10.4 20.9 12.1m15.5-9.5c6.5 3 7.1 13 1.6 25.9-6.9 16-13.5 23-22.4 23.8-4.7.4-5.5.2-7-1.9-.9-1.4-1.6-4.3-1.6-7.1V289h4.8c13.3 0 22.5-16.1 16.2-28.5-2.6-5.1-2.6-5.3 1.3-7 4-1.8 4-1.8 7.1-.4" /><path d="M88.2 38.9c-6.7 2.3-11.4 6.6-11 10.1s3.7 3.7 7.2.5c3.5-3.3 6.7-4.5 11.4-4.5 7.8 0 13.2 6.1 13.6 15.2.4 8.3 6 9.4 7.3 1.5 1.5-9.3-5.8-20.5-15-23.2-6.3-1.9-7-1.9-13.5.4" /><path d="M83.4 54.4c-20 6.4-41.3 41.7-41.7 69.1-.1 7.7.2 9.7 2.3 14 6.6 13.3 20.2 12.6 34.5-1.9C99.9 114.1 111 76.7 101 60.3c-3.6-6-10.3-8.3-17.6-5.9m9.5 7.6c5.9 3.1 6.1 18.9.5 35.2-8.5 25-29.4 47.2-39.4 41.8-5.2-2.8-6.5-15.7-3-29.6 5.1-19.9 21.2-43.2 33-47.7 2.4-.9 7-.8 8.9.3m30.8 89.7c-.4.3-.7 1.6-.7 2.9 0 1.7 1.4 3 5.8 5.5 11.4 6.4 46.1 24 64 32.3 14.9 7 18.7 8.4 20.3 7.6 2-1.1 2.4-2.7 1.1-4.6-.4-.7-10.4-5.9-22.2-11.6s-31.3-15.4-43.3-21.6c-21.3-10.9-23.6-11.9-25-10.5m144.9 21.9c-.9.8-1.6 3.2-1.6 5.2 0 5.9-4.1 13.3-10.4 18.7-5.9 5.1-6.5 6.5-4.1 8.5 5.7 4.7 20.1-12.3 22-26.1.4-3.6.2-5-1-6.3-2-2-2.9-2-4.9 0m117.3 72.9c-7 8.5-5.6 8.4-18.7 2.4-4.6-2.2-9.2-3.9-10.2-3.9-2.6 0-4.6 2.8-3.4 4.7 1.6 2.6 26.6 13.2 28.6 12.2 2.2-1.2 14.8-17.4 14.8-19.1 0-1.8-2-3.8-3.7-3.8-.7 0-4.1 3.4-7.4 7.5m-106.2-7.7c-1 1-1.7 3.5-1.7 5.5 0 3.9-3 8.1-6.6 9.1-3 .9-6.8-2.5-8.3-7.4-1.3-4.3-3.9-6.1-7.4-5.2-4.5 1.2-4.3 9.1.6 16.2 6.8 10.2 21.6 9.8 29-.6 3.7-5.3 4.9-14.5 2.2-17.4-2.3-2.5-5.7-2.6-7.8-.2" /></g></svg>
                 {/* 🔭 */}
               </div>
-              <h2>Our Vision</h2>
-              <p>We strive to be the industry leader in cushion innovation. We are recognized for our unwavering commitment to quality and personalized service that caters to the specific needs and visions of our clients.</p>
+              <h2>{content.visionTitle}</h2>
+              <div dangerouslySetInnerHTML={{ __html: content.vision }} />
             </div>
           </div>
         </div>
@@ -62,7 +65,7 @@ export default function AboutPage() {
         <div className="container">
           <div className="section-title">
             <span className="eyebrow">What Sets Us Apart</span>
-            <h2>Our Unique Value Proposition</h2>
+            <h2>{content.propositionTitle}</h2>
             <div className="divider" />
           </div>
 
@@ -84,12 +87,22 @@ export default function AboutPage() {
                 icon: <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 128 128"><g strokeWidth="0"><path d="M25.8 21.5c-13 5.1-24.1 9.6-24.7 9.9-1.7 1.1-1.5 60.2.1 60.9.7.3 12.4 4.8 26 10.1L52 112l13.2-5.1c11.2-4.3 13.3-4.8 14-3.5 4.3 7.8 13.1 12.6 22.7 12.6 7.7 0 13.1-2.1 17.9-7 5.5-5.5 7.6-10.6 7.7-18.5 0-6-.4-7.8-3.1-12.5-3.6-6.3-10.6-11.7-16.5-12.6l-3.9-.7V48.4c0-14.6-.2-16.4-1.8-17.3-4.8-2.6-48.7-19.1-50.6-19-1.1 0-12.7 4.3-25.8 9.4m31.5-3.8c2.6.9 4.7 1.9 4.7 2.2 0 .4-9.8 4.3-21.6 8.9l-21.6 8.3-4.9-1.7C11.2 34.4 9 33.3 9 33c0-.7 40.6-16.8 42.5-16.9.6-.1 3.1.7 5.8 1.6m16.6 6.5c3.6 1.4 4.8 2.4 3.9 2.9-2.4 1.3-41.2 16.2-42.3 16.2-1.8 0-10.6-3.6-10-4.1.4-.5 41.3-16.9 42.6-17.1.4-.1 3 .9 5.8 2.1m16.8 6.4c2.4.9 4.3 1.9 4.3 2.3 0 .3-9.7 4.3-21.5 8.9L52 50.2l-4.5-1.8c-2.5-.9-4.7-2-5-2.3-.4-.7 40-16.9 42.5-17 .8-.1 3.4.6 5.7 1.5m-80.2 7.7 6 2.3.3 8c.2 4.3.7 8.3 1.2 8.8.4.4 2.4.3 4.4-.4 3.4-1.1 3.8-1 7.3 1.9 6 5 7.3 4.3 7.3-3.5 0-4.9.3-6.5 1.3-6.1.6.2 3.6 1.3 6.5 2.3l5.2 1.9V107l-3.7-1.5c-2.1-.8-12.3-4.8-22.8-8.9l-19-7.3-.3-26.7C4.1 48 4.1 36 4.3 36c.1 0 3 1 6.2 2.3M100 50.4v14.3l-3.9.7c-5.6.9-13 6.3-16.6 12-2.6 4.3-3 5.9-3.1 13l-.2 8-5.8 2.2c-3.3 1.2-8.3 3.1-11.1 4.3L54 107V80.2l.1-26.7 22.2-8.7c12.2-4.7 22.5-8.7 23-8.7.4-.1.7 6.4.7 14.3m-70.7-4.9c3.5 1.4 3.7 1.8 3.7 6.1v4.5L30.3 54c-2.1-1.6-3.5-2-6-1.5l-3.3.6v-5.2c0-5.7.2-5.8 8.3-2.4m84.9 27.1c12.5 8.7 12.5 27 0 35.8-5.7 4.1-15.8 4.9-21.8 1.8-16.6-8.6-16.6-30.5.1-39.6 2.2-1.2 5-1.6 10.2-1.3 6.1.2 7.8.7 11.5 3.3" /><path d="M103.7 83.7c-6.8 6.8-6.8 6.8-8.5 4.7-3.2-3.8-6-4.8-8.8-2.9-3.7 2.4-3.1 5.8 2.2 12.6 6.9 8.7 8.2 8.4 20.6-3.9 10-10 11.3-12.5 8.2-15.6-3.2-3.2-6.5-2-13.7 5.1m11.3-2c0 1.2-17.4 18.3-18.6 18.3-.6 0-2.4-1.7-4-3.8-4.1-5.1-4.6-6-3.8-7.3.4-.7 2.1.5 4.5 3.2l3.8 4.4 7.8-7.8c6.9-6.9 10.3-9.1 10.3-7" /></g></svg>,
                 title: 'Bulk Personalization', text: 'We excel at handling large-scale personalized orders. Whether you need to outfit an entire marina or furnish multiple locations, we manage bulk orders with the same meticulous attention to detail.'
               },
-            ].map((item, i) => (
+            ].slice(0, content.propositions.length)
+              .map((item, i) => ({ ...item, ...content.propositions[i] }))
+              .concat(content.propositions.slice(4).map(item => ({
+                ...item,
+                icon: (
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50" fill="currentColor">
+                    <path d="M25 3c2.5 11.5 6.5 15.5 22 22-15.5 6.5-19.5 10.5-22 22C22.5 35.5 18.5 31.5 3 25 18.5 18.5 22.5 14.5 25 3Z" />
+                  </svg>
+                ),
+              })))
+              .map((item, i) => (
               <div key={i} className={styles.uvpItem}>
                 <span className={styles.uvpIcon}>{item.icon}</span>
                 <div>
                   <h3>{item.title}</h3>
-                  <p>{item.text}</p>
+                  <div dangerouslySetInnerHTML={{ __html: item.text }} />
                 </div>
               </div>
             ))}
@@ -102,7 +115,7 @@ export default function AboutPage() {
         <div className="container">
           <EditableMedia
             mediaKey="about_featured_image"
-            alt="Showcase of our premium handcrafted cushion covers in a stylish living space"
+            alt={content.seo.imageAlts.featured}
             type="image"
             className="img-placeholder"
             style={{ maxWidth: '860px', height: '480px', margin: '0 auto', borderRadius: 'var(--radius-xl)' }}
@@ -122,17 +135,17 @@ export default function AboutPage() {
           <div className={styles.certGrid}>
             <div className={styles.certText}>
               <span className="badge badge-accent">Certified Partner</span>
-              <h2>Sunbrella Certification</h2>
-              <p>We are proud to use Sunbrella fabrics, renowned for their durability, fade resistance, and easy maintenance. This certification signifies that our products offer long-term performance and exceptional durability, perfect for any environment.</p>
+              <h2>{content.certificationTitle}</h2>
+              <div dangerouslySetInnerHTML={{ __html: content.certification }} />
               <div className={styles.certBadges}>
-                <div className={styles.certBadge}><span></span> Water Resistant</div>
-                <div className={styles.certBadge}><span></span> Fade Resistant</div>
-                <div className={styles.certBadge}><span></span> Eco Certified</div>
+                {content.certBadges.map((badge, index) => (
+                  <div key={`${badge}-${index}`} className={styles.certBadge}><span></span> {badge}</div>
+                ))}
               </div>
             </div>
             <EditableMedia
               mediaKey="about_cert_first"
-              alt="Official Sunbrella fabric certification showcasing our trusted partnership"
+              alt={content.seo.imageAlts.certification}
               type="image"
               className={`img-placeholder ${styles.certImg}`}
             />
@@ -146,14 +159,14 @@ export default function AboutPage() {
           <div className={styles.certGrid}>
             <EditableMedia
               mediaKey="about_care_img"
-              alt="Person maintaining and cleaning a Sunbrella outdoor cushion easily"
+              alt={content.seo.imageAlts.care}
               type="image"
               className={`img-placeholder ${styles.certImg}`}
             />
             <div>
-              <h2>Care &amp; Protection</h2>
-              <p>We want you and your customers to have the best experience possible with our fabrics. Cushion Guru is here for you, delivering customer service and peace of mind long after the sale.</p>
-              <p style={{ marginTop: '1rem' }}>Most fabrics have been tested to achieve key safety certifications, like <strong>GREENGUARD Gold</strong> and <strong>OEKO-TEX®</strong>, to ensure our fabrics are not made with harmful substances.</p>
+              <h2>{content.careTitle}</h2>
+              <div dangerouslySetInnerHTML={{ __html: content.care }} />
+              <div style={{ marginTop: '1rem' }} dangerouslySetInnerHTML={{ __html: content.careDetails }} />
             </div>
           </div>
         </div>

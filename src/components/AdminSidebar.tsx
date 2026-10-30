@@ -46,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   // { href: '/admin/fabrics', label: 'Fabric Management', icon: '🧵' },
   { href: '/admin/hero', label: 'Hero Images', icon: '🖼️' },
   { href: '/admin/blogs', label: 'Blogs', icon: '📝' },
+  { href: '/admin/pages', label: 'Page Content', icon: '📄' },
   { href: '/admin/users', label: 'User Management', icon: '👥' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ];
@@ -57,6 +58,7 @@ export default function AdminSidebar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [siteLogo, setSiteLogo] = useState('');
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth <= 1024);
@@ -65,14 +67,27 @@ export default function AdminSidebar() {
     return () => window.removeEventListener('resize', fn);
   }, []);
 
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(response => response.ok ? response.json() : null)
+      .then(settings => setSiteLogo(settings?.logoUrl || settings?.siteLogo || ''))
+      .catch(() => setSiteLogo(''));
+  }, []);
+
   const visibleItems = isMobile ? NAV_ITEMS.slice(0, 4) : NAV_ITEMS;
   const moreItems = isMobile ? NAV_ITEMS.slice(4) : [];
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
-        <span>🛋️</span>
-        <div><strong>Cushion Guru</strong></div>
+        {siteLogo ? (
+          <img src={siteLogo} alt="Cushion Guru" style={{ display: 'block', width: '100%', maxWidth: 160, height: 42, objectFit: 'contain', objectPosition: 'left center' }} />
+        ) : (
+          <>
+            <span>🛋️</span>
+            <div><strong>Cushion Guru</strong></div>
+          </>
+        )}
       </div>
 
       <nav className={styles.sideNav}>

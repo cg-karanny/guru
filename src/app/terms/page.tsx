@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import styles from './legal.module.css';
+import { getManagedPageContent } from '@/lib/pageContent';
+import { pageContentDefaults } from '@/lib/pageContentDefaults';
 
-export const metadata: Metadata = {
-  title: 'Terms & Conditions',
-  description: 'Cushion Guru Terms & Conditions. Read our policies on quality assurance, customization, payment, shipping, returns, and more.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getManagedPageContent('terms', pageContentDefaults.terms);
+  return { title: seo.metaTitle, description: seo.metaDescription, category: seo.category, keywords: [...seo.tags] };
+}
 
 const TERMS = [
   { num: '1', title: 'Quality Assurance', text: 'Cushion Guru is committed to providing the highest quality fabric for our customizable cushion covers. Through our partnership with Sunbrella, we ensure that our fabric meets the highest standards of durability, colorfastness, and performance.' },
@@ -19,26 +21,27 @@ const TERMS = [
   { num: '10', title: 'Governing Law', text: 'These Terms & Conditions shall be governed by and construed in accordance with the laws of USA. Any disputes arising under these Terms & Conditions shall be subject to the exclusive jurisdiction of the courts in USA.' },
 ];
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const content = await getManagedPageContent('terms', pageContentDefaults.terms);
   return (
     <>
       <section className={styles.hero}>
         <div className="container text-center">
-          <h1>Cushion Guru Terms &amp; Conditions</h1>
-          <p>Please read these terms carefully before placing an order</p>
+          <h1>{content.title}</h1>
+          <p>{content.subtitle}</p>
         </div>
       </section>
       <section className={`section-padding ${styles.section}`}>
         <div className="container-narrow">
           <div className={styles.intro}>
-            By placing an order with Cushion Guru, you acknowledge that you have read, understood, and agree to abide by these Terms & Conditions.
+            <div dangerouslySetInnerHTML={{ __html: content.introduction }} />
           </div>
-          {TERMS.map(t => (
-            <div key={t.num} className={styles.term}>
-              <div className={styles.termNum}>{t.num}</div>
+          {content.terms.map((t, index) => (
+            <div key={`${index}-${t.title}`} className={styles.term}>
+              <div className={styles.termNum}>{index + 1}</div>
               <div>
                 <h3>{t.title}</h3>
-                <p>{t.text}</p>
+                <div dangerouslySetInnerHTML={{ __html: t.text }} />
               </div>
             </div>
           ))}

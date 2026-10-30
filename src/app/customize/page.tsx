@@ -1,12 +1,17 @@
 import type { Metadata } from 'next';
+import { getManagedSeo } from '@/lib/pageContent';
 import { Suspense } from 'react';
 import CustomizePage from './CustomizePage';
 import { prisma } from '@/lib/prisma';
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Customize Your Cushion',
   description: 'Build your perfect custom cushion with our step-by-step configurator. Choose size, shape, fabric and more.',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getManagedSeo('store-customize', defaultMetadata);
+}
 
 export const dynamic = 'force-dynamic';
 
