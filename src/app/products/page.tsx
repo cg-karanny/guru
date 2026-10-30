@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import WishlistButton from '@/components/WishlistButton';
 
 /* ── Stock badge for regular products ── */
 function StockBadge({ stock }: { stock: number }) {
@@ -180,6 +181,7 @@ export default function ProductsPage() {
                         style={{ width: '100%' }} disabled={product.stock === 0}>
                         {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                       </button>
+                      <WishlistButton item={{ id: product.id, name: product.name, price: product.sellingPrice ?? product.listingPrice, quantity: 1, image: product.imageUrl, category: 'Non-Customizable', stock: product.stock }} />
                       <button onClick={() => handleBuyNow(product)} className="btn btn-outline"
                         style={{ width: '100%' }} disabled={product.stock === 0}>
                         {product.stock === 0 ? 'Unavailable' : 'Buy Now'}
@@ -246,6 +248,7 @@ export default function ProductsPage() {
 
                       {/* Buttons */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <WishlistButton item={{ id: lp.id, name: lp.name, price: lp.startingPrice, quantity: 1, image: lp.imageUrl, category: 'Linked', href: detailHref }} />
                         {/* View Details → always internal page */}
                         <a href={detailHref} style={{ textDecoration: 'none' }}>
                           <div className="btn btn-outline" style={{ width: '100%', textAlign: 'center', fontSize: '0.875rem', padding: '0.55rem', display: 'block' }}>

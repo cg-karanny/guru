@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import WishlistButton from '@/components/WishlistButton';
 
 type BlockType = 'paragraph' | 'heading' | 'bullet' | 'gap';
 interface ContentBlock { id: string; type: BlockType; text: string; }
@@ -187,6 +188,7 @@ export default function LinkedProductDetailPage({ params }: { params: Promise<{ 
               >
                 Customize Now
               </a>
+              <WishlistButton item={{ id: product.id, name: product.name, price: product.startingPrice, quantity: 1, image: product.imageUrl, category: 'Linked', href: `/products/linked/${product.id}` }} />
               <Link href="/products"
                 style={{ textAlign: 'center', fontSize: '0.88rem', color: 'var(--text-muted)', textDecoration: 'none', marginTop: '0.25rem' }}>
                 ← Back to Shop

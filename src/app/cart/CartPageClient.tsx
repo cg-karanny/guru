@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import WishlistButton from '@/components/WishlistButton';
 import { getOrderedCustomOptions } from '@/lib/format-options';
 
 // ── Defined OUTSIDE the main component so React doesn't remount on every render ──
@@ -427,6 +428,7 @@ export default function CartPageClient() {
                           </span>
                         )}
                       </div>
+                      <WishlistButton item={item} />
                       {item.category === 'Custom' && item.customOptions && (
                         <Link
                           href={`/customize?edit=${encodeURIComponent(item.id)}`}

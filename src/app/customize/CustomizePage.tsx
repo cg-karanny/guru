@@ -1,4 +1,6 @@
 'use client';
+import WishlistButton from '@/components/WishlistButton';
+import { useWishlist } from '@/context/WishlistContext';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -538,8 +540,11 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const searchParams = useSearchParams();
   const router = useRouter();
   const { items, addItem, updateItem } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const editItemId = searchParams.get('edit');
   const editingCartItem = editItemId ? items.find(item => item.id === editItemId && item.category === 'Custom') : undefined;
+  const savedDesign = wishlistItems.find(item => item.id === searchParams.get('wishlist') && item.category === 'Custom');
+  const editingDesign = editingCartItem ?? savedDesign;
 
   /* ── State ── */
   const [step, setStep] = useState(1);
@@ -616,8 +621,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   });
 
   useEffect(() => {
-    if (!editingCartItem || editLoaded) return;
-    const options = editingCartItem.customOptions;
+    if (!editingDesign || editLoaded) return;
+    const options = editingDesign.customOptions;
     if (!options) return;
 
     if (options.type) setCushionType(options.type);
@@ -630,15 +635,15 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     if (options.zipper) setZipper(options.zipper);
     if (options.piping) setPiping(options.piping);
     if (options.ties) setTies(options.ties);
-    if (editingCartItem.quantity) setQuantity(editingCartItem.quantity);
+    if (editingDesign.quantity) setQuantity(editingDesign.quantity);
 
     setDims(current => ({ ...current, ...parseCartDimensions(options.dimensions) }));
     setEditLoaded(true);
-  }, [editingCartItem, editLoaded]);
+  }, [editingDesign, editLoaded]);
 
   useEffect(() => {
-    if (!editingCartItem || !editLoaded || brands.length === 0) return;
-    const fabricName = editingCartItem.customOptions?.fabric;
+    if (!editingDesign || !editLoaded || brands.length === 0) return;
+    const fabricName = editingDesign.customOptions?.fabric;
     if (!fabricName || fabricName === 'No fabric') return;
 
     for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
@@ -649,7 +654,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
         return;
       }
     }
-  }, [brands, editingCartItem, editLoaded]);
+  }, [brands, editingDesign, editLoaded]);
 
   const handleCategoryChange = (nextCategory: string) => {
     setCategory(nextCategory);
@@ -1432,6 +1437,11 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
             {step === 8 && (
               <div className={styles.priceCTAs}>
+                <WishlistButton disabled={!selectedFabric} item={{
+                  id: 'custom-design',
+                  name: `Custom ${cushionType}`, price: Math.max(totalPrice, 0), quantity,
+                  image: stepImages[optionKey(shape)] || '', category: 'Custom', customOptions: buildCartDetails(),
+                }} />
                 <button className="btn btn-accent" style={{ width: '100%' }} onClick={handleAddToCart}>
                   {editingCartItem ? 'Update Design' : 'Add to Cart'}
                 </button>
