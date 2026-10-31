@@ -23,6 +23,14 @@ export async function POST(req: NextRequest) {
     if (paymentMethod && paymentMethod !== 'STRIPE') {
       return NextResponse.json({ error: 'Unsupported payment method' }, { status: 400 });
     }
+    // Checkout is requested after this endpoint. Reject missing configuration
+    // before persisting an order or allocating stock.
+    if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+      return NextResponse.json(
+        { error: 'Stripe payments are not configured. Please contact support.' },
+        { status: 503 },
+      );
+    }
     const safePaymentMethod = 'STRIPE';
     const safeTotal = Number(total ?? 0);
     const safeDeliveryCharge = Number(deliveryCharge ?? 0);
