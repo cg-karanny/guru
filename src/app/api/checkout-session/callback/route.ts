@@ -5,6 +5,10 @@ import { sendMail } from '@/lib/mail';
 import { generateOrderConfirmationEmail, generatePaymentFailedEmail } from '@/lib/email-templates';
 
 export async function GET(req: NextRequest) {
+  const originUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
+  if (!originUrl) {
+    return NextResponse.json({ error: 'Website URL is not configured. Please contact support.' }, { status: 503 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const action = searchParams.get('action'); // 'success' or 'cancel'
@@ -12,7 +16,7 @@ export async function GET(req: NextRequest) {
     const orderId = searchParams.get('order_id');
 
     if (!orderId) {
-      return NextResponse.redirect(`${req.nextUrl.origin}/cart`);
+      return NextResponse.redirect(`${originUrl}/cart`);
     }
 
     const order = await prisma.order.findUnique({
@@ -21,7 +25,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!order) {
-      return NextResponse.redirect(`${req.nextUrl.origin}/cart`);
+      return NextResponse.redirect(`${originUrl}/cart`);
     }
 
     const siteSettings = await prisma.setting.findMany({
@@ -29,7 +33,6 @@ export async function GET(req: NextRequest) {
     });
     const siteName = siteSettings.find(s => s.key === 'siteName')?.value || 'Cushion Guru';
     const siteLogo = siteSettings.find(s => s.key === 'logoUrl')?.value;
-    const originUrl = req.nextUrl.origin;
     const customerName = (order.shippingAddr as any)?.shipping?.fullName || order.user?.name || 'Valued Customer';
     const email = order.user?.email || (order.shippingAddr as any)?.shipping?.email;
 
@@ -128,6 +131,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${originUrl}/account/orders`);
   } catch (err: any) {
     console.error('Checkout callback error:', err);
-    return NextResponse.redirect(`${req.nextUrl.origin}/cart`);
+    return NextResponse.redirect(`${originUrl}/cart`);
   }
 }
