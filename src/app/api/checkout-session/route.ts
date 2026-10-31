@@ -5,7 +5,14 @@ import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+    const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
+    if (!secretKey) {
+      return NextResponse.json(
+        { error: 'Stripe payments are not configured. Please contact support.' },
+        { status: 503 },
+      );
+    }
+    const stripe = new Stripe(secretKey, {
       apiVersion: '2025-02-24.acacia',
     });
 
