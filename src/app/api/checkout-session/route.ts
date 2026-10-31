@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
       apiVersion: '2025-02-24.acacia',
     });
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
+    if (!siteUrl) {
+      return NextResponse.json({ error: 'Website URL is not configured. Please contact support.' }, { status: 503 });
+    }
     const { orderId } = await req.json();
 
     const order = await prisma.order.findUnique({
@@ -27,7 +31,6 @@ export async function POST(req: NextRequest) {
     }
 
     const items = order.items as any[];
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const line_items = items.map((item) => {
       // Validate image URL. Stripe requires a valid absolute HTTP/HTTPS URL.
