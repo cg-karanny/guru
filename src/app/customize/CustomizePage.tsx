@@ -48,15 +48,46 @@ const CUSHION_TYPES: ImgOpt[] = [
 
 /** Shapes with display name (used in DB shape field) */
 type ShapeDef = { key: string; label: string; img?: string; icon?: string };
+function getBasicShapePreview(shape: string): string {
+  const orange = '#fb4a1e';
+  let outline = '<rect x="34" y="28" width="132" height="72" rx="3" />';
+
+  switch (shape) {
+    case 'Round':
+      outline = '<circle cx="100" cy="64" r="42" />';
+      break;
+    case 'Trapezium':
+      outline = '<path d="M52 28 H148 L166 100 H34 Z" />';
+      break;
+    case 'T Cushion':
+      outline = '<path d="M28 28 H172 V54 H126 V100 H74 V54 H28 Z" />';
+      break;
+    case 'L Shape':
+      outline = '<path d="M34 28 H92 V68 H166 V100 H34 Z" />';
+      break;
+    case 'Triangle':
+      outline = '<path d="M100 24 L168 100 H32 Z" />';
+      break;
+    case 'Pillow':
+    case 'Rectangle':
+    case 'Box':
+      outline = '<rect x="34" y="28" width="132" height="72" rx="12" />';
+      break;
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128"><g fill="#fff" stroke="${orange}" stroke-width="5" stroke-linejoin="round">${outline}</g></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 const SHAPES: ShapeDef[] = [
-  { key: 'Rectangle', label: 'Throw Pillow' },
-  { key: 'Box', label: 'Rectangle' },
-  { key: 'Trapezium', label: 'Trapezium' },
-  { key: 'T Cushion', label: 'T Shape' },
-  { key: 'L Shape', label: 'L Shape' },
-  { key: 'Triangle', label: 'Triangle' },
-  { key: 'Round', label: 'Round' },
-  { key: 'Pillow', label: 'Pillow' },
+  { key: 'Rectangle', label: 'Throw Pillow', img: getBasicShapePreview('Rectangle') },
+  { key: 'Box', label: 'Rectangle', img: getBasicShapePreview('Box') },
+  { key: 'Trapezium', label: 'Trapezium', img: getBasicShapePreview('Trapezium') },
+  { key: 'T Cushion', label: 'T Shape', img: getBasicShapePreview('T Cushion') },
+  { key: 'L Shape', label: 'L Shape', img: getBasicShapePreview('L Shape') },
+  { key: 'Triangle', label: 'Triangle', img: getBasicShapePreview('Triangle') },
+  { key: 'Round', label: 'Round', img: getBasicShapePreview('Round') },
+  { key: 'Pillow', label: 'Pillow', img: getBasicShapePreview('Pillow') },
 ];
 
 const STEP_TWO_SHAPES: ShapeDef[] = [
@@ -80,8 +111,13 @@ const STEP_TWO_SHAPES: ShapeDef[] = [
   { key: 'All Top Corners Rounded', label: 'All Top Corners Rounded', img: '/images/shapes/All Top Corners Rounded.png' },
   { key: 'Outer Corners Rounded', label: 'Outer Corners Rounded', img: '/images/shapes/Outer Corners Rounded.png' },
   { key: 'All Corners Rounded', label: 'All Corners Rounded', img: '/images/shapes/All Corners Rounded.png' },
+  { key: 'Outer Front Corners Rounded', label: 'Outer Front Corners Rounded', img: '/images/shapes/Outer Bottom Corners Rounded.png' },
+  { key: 'All Front Corners Rounded', label: 'All Front Corners Rounded', img: '/images/shapes/All Bottom Corners Rounded.png' },
+  { key: 'Outer Back Corners Rounded', label: 'Outer Back Corners Rounded', img: '/images/shapes/Outer Top Corners Rounded.png' },
+  { key: 'All Back Corners Rounded', label: 'All Back Corners Rounded', img: '/images/shapes/All Top Corners Rounded.png' },
   { key: '1 Seat 1 Back', label: '1 Seat 1 Back', img: '/images/shapes/1 Seat 1 Back.png' },
   { key: '1 Seat 2 Back', label: '1 Seat 2 Back', img: '/images/shapes/1 Seat 2 Back.png' },
+  { key: '1 Seat 3 Back', label: '1 Seat 3 Back' },
   { key: '2 Seat 1 Back', label: '2 Seat 1 Back', img: '/images/shapes/2 Seat 1 Back.png' },
   { key: '2 Seat 2 Back', label: '2 Seat 2 Back', img: '/images/shapes/2 Seat 2 Back.png' },
   { key: '3 Seat 1 Back', label: '3 Seat 1 Back', img: '/images/shapes/3 Seat 1 Back.png' },
@@ -96,7 +132,111 @@ const STEP_TWO_SHAPES: ShapeDef[] = [
   { key: '3 Outer Back Corners Rounded', label: '3 Outer Back Corners Rounded', img: '/images/shapes/3 Outer Back Corners Rounded.png' },
   { key: '3 Outer Front Corners Rounded', label: '3 Outer Front Corners Rounded', img: '/images/shapes/3 Outer Front Corners Rounded.png' },
   { key: '3 Outer Top Corners Rounded', label: '3 Outer Top Corners Rounded', img: '/images/shapes/3 Outer Top Corners Rounded.png' },
+  { key: 'Rounded Bottom', label: 'Rounded Bottom' },
+  { key: 'Rounded Top', label: 'Rounded Top' },
+  { key: 'Pillow', label: 'Pillow' },
 ];
+
+const TYPE_SHAPE_OPTIONS: Record<string, string[]> = {
+  'Bench Window Seat': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid'],
+  'Bench Window Back': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid'],
+  Chaise: ['Rectangle 1 Break', 'Rectangle 2 Breaks', 'Rectangle 3 Breaks', 'Rounded Rectangle 1 Break', 'Rounded Rectangle 2 Breaks', 'Rounded Rectangle 3 Breaks'],
+  'Bed Cushion': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid'],
+  Chair: ['Squared Corners', 'Rounded Corners', 'Rounded Top'],
+  'Chair No Back': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid', 'Circle'],
+  Ottoman: ['Squared Corners', 'Rounded Corners'],
+  'Toss Pillow': ['Pillow'],
+  'Lumbar Pillow': ['Pillow'],
+  'Bolster Pillow': ['Pillow'],
+};
+
+const CONFIGURATION_SHAPE_OPTIONS: Record<string, Record<string, string[]>> = {
+  Loveseat: {
+    '2 Seat 2 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '2 Seat 1 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '1 Seat 2 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '1 Seat 1 Back': ['Rounded Corners', 'Rounded Bottom', 'Rounded Top'],
+  },
+  Sofa: {
+    '3 Seat 3 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '2 Seat 2 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '1 Seat 3 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
+    '1 Seat 1 Back': ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+    '3 Seat 1 Back': ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+    '2 Seat 1 Back': ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+  },
+};
+
+const BACK_CORNER_STYLES = [
+  'Squared Corners',
+  'Outer Front Corners Rounded',
+  'All Front Corners Rounded',
+  'Outer Back Corners Rounded',
+  'All Back Corners Rounded',
+  'Outer Corners Rounded',
+  'All Corners Rounded',
+];
+
+function getConfigurationPartShapes(type: string, configuration: string, part: 'back' | 'seat'): string[] {
+  const configuredShapes = CONFIGURATION_SHAPE_OPTIONS[type]?.[configuration] ?? [];
+  // A single-seat/single-back layout keeps the shape set provided in the workbook.
+  // One-back configurations with the four-style workbook list use front/back labels
+  // for the back cushion and bottom/top labels for the seat cushion.
+  if (configuredShapes.some(shape => shape === 'Rounded Bottom') && configuredShapes.some(shape => shape === 'Rounded Top')) {
+    return part === 'back'
+      ? configuredShapes.map(shape => shape.replace('Rounded Bottom', 'Rounded Front').replace('Rounded Top', 'Rounded Back'))
+      : configuredShapes;
+  }
+  return part === 'back' ? BACK_CORNER_STYLES : configuredShapes;
+}
+
+function getConfigurationPieceCount(configuration: string, part: 'back' | 'seat'): number {
+  const match = configuration.match(part === 'back' ? /(\d+)\s*Back/i : /(\d+)\s*Seat/i);
+  return match ? Math.max(1, Number(match[1])) : 1;
+}
+
+function getConfigurationShapePreview(shape: string, count: number, part: 'back' | 'seat'): string {
+  const orientedShape = part === 'back'
+    ? shape.replace(/Front/gi, 'Bottom').replace(/Back/gi, 'Top')
+    : shape;
+  const isOuterOnly = /\bOuter\b/i.test(orientedShape) && !/\bAll\b/i.test(orientedShape);
+  const hasNamedEdge = /Top|Bottom|Front|Back/i.test(orientedShape);
+  const roundsAllCorners = !hasNamedEdge && /Corners/i.test(orientedShape);
+  const roundsTop = /Top|Back/i.test(orientedShape);
+  const roundsBottom = /Bottom|Front/i.test(orientedShape);
+  const isOuterPiece = (index: number) => index === 0 || index === count - 1;
+  const radius = 10;
+  const gap = count > 2 ? 6 : 10;
+  const padding = 12;
+  const width = (200 - padding * 2 - gap * (count - 1)) / count;
+  const height = 62;
+  const y = 21;
+
+  const paths = Array.from({ length: count }, (_, index) => {
+    const x = padding + index * (width + gap);
+    const outerPiece = isOuterPiece(index);
+    const useTop = (roundsAllCorners && (!isOuterOnly || outerPiece)) || (roundsTop && (!isOuterOnly || outerPiece));
+    const useBottom = (roundsAllCorners && (!isOuterOnly || outerPiece)) || (roundsBottom && (!isOuterOnly || outerPiece));
+    const roundTopLeft = useTop && (!isOuterOnly || index === 0);
+    const roundTopRight = useTop && (!isOuterOnly || index === count - 1);
+    const roundBottomRight = useBottom && (!isOuterOnly || index === count - 1);
+    const roundBottomLeft = useBottom && (!isOuterOnly || index === 0);
+    const tl = roundTopLeft ? radius : 0;
+    const tr = roundTopRight ? radius : 0;
+    const br = roundBottomRight ? radius : 0;
+    const bl = roundBottomLeft ? radius : 0;
+
+    return `<path d="M ${x + tl} ${y} H ${x + width - tr} Q ${x + width} ${y} ${x + width} ${y + tr} V ${y + height - br} Q ${x + width} ${y + height} ${x + width - br} ${y + height} H ${x + bl} Q ${x} ${y + height} ${x} ${y + height - bl} V ${y + tl} Q ${x} ${y} ${x + tl} ${y} Z" fill="#fff" stroke="#fb4a1e" stroke-width="4"/>`;
+  }).join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 104">${paths}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+const getShapeOption = (key: string): ShapeDef =>
+  STEP_TWO_SHAPES.find(shape => shape.key === key)
+  ?? SHAPES.find(shape => shape.key === key)
+  ?? { key, label: key };
 
 function optionKey(value: string) {
   return value.toLowerCase().replace(/ /g, '_');
@@ -132,6 +272,19 @@ function parseCartDimensions(dimensions?: string): Partial<Dims> {
     ['thickness', 'Thickness'],
     ['ear', 'Ear'],
     ['diameter', 'Diameter'],
+    ['depth', 'Depth'],
+    ['height', 'Height'],
+    ['seatThickness', 'Seat Thickness'],
+    ['backHeight', 'Back Height'],
+    ['backThickness', 'Back Thickness'],
+    ['frontWidth', 'Front Width'],
+    ['centerDepth', 'Center Depth'],
+    ['backWidth', 'Back Width'],
+    ['totalWidth', 'Total Width'],
+    ['section1', 'Section 1'],
+    ['section2', 'Section 2'],
+    ['section3', 'Section 3'],
+    ['section4', 'Section 4'],
   ];
 
   fields.forEach(([field, label]) => {
@@ -151,6 +304,19 @@ const DIM_CONFIG = {
   thickness: { start: 1, end: 12, step: 0.5, label: 'Thickness (in)' },
   ear: { start: 2, end: 24, step: 1, label: 'Ear (in)' },
   diameter: { start: 6, end: 120, step: 1, label: 'Diameter (in)' },
+  depth: { start: 6, end: 120, step: 1, label: 'Depth (in)' },
+  height: { start: 6, end: 120, step: 1, label: 'Height (in)' },
+  seatThickness: { start: 1, end: 12, step: 0.5, label: 'Seat Thickness (in)' },
+  backHeight: { start: 6, end: 120, step: 1, label: 'Back Height (in)' },
+  backThickness: { start: 1, end: 12, step: 0.5, label: 'Back Thickness (in)' },
+  frontWidth: { start: 6, end: 120, step: 1, label: 'Front Width (in)' },
+  centerDepth: { start: 6, end: 120, step: 1, label: 'Center Depth (in)' },
+  backWidth: { start: 6, end: 120, step: 1, label: 'Back Width (in)' },
+  totalWidth: { start: 6, end: 240, step: 1, label: 'Total Width (in)' },
+  section1: { start: 6, end: 120, step: 1, label: 'Section 1 (in)' },
+  section2: { start: 6, end: 120, step: 1, label: 'Section 2 (in)' },
+  section3: { start: 6, end: 120, step: 1, label: 'Section 3 (in)' },
+  section4: { start: 6, end: 120, step: 1, label: 'Section 4 (in)' },
   quantity: { start: 1, end: 200, step: 1, label: 'Quantity' },
 };
 
@@ -196,7 +362,56 @@ const FABRIC_INITIAL_COUNT = 54;
 type Dims = {
   length: number; width: number; bottomWidth: number; topWidth: number;
   thickness: number; ear: number; diameter: number;
+  depth: number; height: number; seatThickness: number; backHeight: number;
+  backThickness: number; frontWidth: number; centerDepth: number; backWidth: number;
+  totalWidth: number; section1: number; section2: number; section3: number; section4: number;
 };
+
+type DimensionField = Exclude<keyof typeof DIM_CONFIG, 'quantity'>;
+
+function getDimensionFields(type: string, selectedShape: string): DimensionField[] {
+  if (selectedShape === 'Trapezoid') return ['thickness', 'frontWidth', 'centerDepth', 'backWidth'];
+  if (type === 'Chaise') {
+    const count = selectedShape.includes('3 Break') ? 4 : selectedShape.includes('2 Break') ? 3 : 2;
+    return ['thickness', 'width', ...(['section1', 'section2', 'section3', 'section4'] as const).slice(0, count)];
+  }
+  if (type === 'Chair') return ['seatThickness', 'width', 'depth', 'backHeight', 'backThickness'];
+  if (type === 'Loveseat' || type === 'Sofa') return ['seatThickness', 'totalWidth', 'depth', 'backHeight', 'backThickness'];
+  if (type === 'Bench Window Back') return ['thickness', 'width', 'height'];
+  if (type === 'Bench Window Seat' || type === 'Bed Cushion' || type === 'Chair No Back') {
+    if (selectedShape === 'Circle') return ['thickness', 'width'];
+    return ['thickness', 'width', 'depth'];
+  }
+  if (type === 'Ottoman') return ['seatThickness', 'width', 'depth'];
+  if (type === 'Toss Pillow' || type === 'Lumbar Pillow' || type === 'Bolster Pillow') return ['length', 'width', 'thickness'];
+  if (selectedShape === 'Trapezium') return ['length', 'bottomWidth', 'topWidth', 'thickness'];
+  if (selectedShape === 'Round') return ['diameter', 'thickness'];
+  if (selectedShape === 'T Cushion' || selectedShape === 'L Shape') return ['length', 'bottomWidth', 'topWidth', 'thickness', 'ear'];
+  if (selectedShape === 'Triangle') return ['length', 'width', 'thickness'];
+  return ['length', 'width', 'thickness'];
+}
+
+function toCalculationDims(dims: Dims, type: string, selectedShape: string): Dims {
+  if (selectedShape === 'Trapezoid') {
+    return { ...dims, length: dims.centerDepth, bottomWidth: dims.frontWidth, topWidth: dims.backWidth };
+  }
+  if (type === 'Chaise') {
+    const sectionCount = selectedShape.includes('3 Break') ? 4 : selectedShape.includes('2 Break') ? 3 : 2;
+    const length = [dims.section1, dims.section2, dims.section3, dims.section4].slice(0, sectionCount).reduce((sum, value) => sum + value, 0);
+    return { ...dims, length, thickness: dims.thickness };
+  }
+  if (type === 'Loveseat' || type === 'Sofa') {
+    return { ...dims, length: dims.depth, width: dims.totalWidth, thickness: dims.seatThickness };
+  }
+  if (type === 'Chair') return { ...dims, length: dims.depth, thickness: dims.seatThickness };
+  if (type === 'Ottoman') return { ...dims, length: dims.depth, thickness: dims.seatThickness };
+  if (type === 'Bench Window Back') return { ...dims, length: dims.height };
+  if (type === 'Bench Window Seat' || type === 'Bed Cushion' || type === 'Chair No Back') {
+    if (selectedShape === 'Circle') return { ...dims, diameter: dims.width };
+    return { ...dims, length: dims.depth };
+  }
+  return dims;
+}
 
 function calcFabricMeters(shape: string, d: Dims): number {
   const { length: F7, width: F8, bottomWidth: F32, topWidth: F33,
@@ -208,7 +423,7 @@ function calcFabricMeters(shape: string, d: Dims): number {
     case 'Pillow':
       return (2 * ((F7 * F8) + (F8 * F10) + (F10 * F7))) / denom;
     case 'Trapezium': {
-      const slant = Math.sqrt(Math.pow(F7, 2) + Math.pow(F32 - F33, 2));
+      const slant = Math.sqrt(Math.pow(F7, 2) + Math.pow((F32 - F33) / 2, 2));
       return (2 * ((F32 + F33) / 2) * F7 + F10 * (F32 + F33 + 2 * slant)) / denom;
     }
     case 'T Cushion':
@@ -311,33 +526,29 @@ function calcTies(ties: string): number {
    HELPERS
 ═══════════════════════════════════════════════════════════════ */
 
-function range(start: number, end: number, step: number): number[] {
-  const arr: number[] = [];
-  for (let v = start; v <= end; v = Math.round((v + step) * 1000) / 1000) arr.push(v);
-  return arr;
-}
-
-function DimSelect({
+function DimensionInput({
   field, value, onChange
 }: {
-  field: keyof typeof DIM_CONFIG;
+  field: DimensionField;
   value: number;
   onChange: (v: number) => void;
 }) {
   const cfg = DIM_CONFIG[field];
-  const opts = range(cfg.start, cfg.end, cfg.step);
   return (
     <div className={styles.dimGroup}>
       <label className={`form-label ${styles.dimLabel}`}>{cfg.label}</label>
-      <select
+      <input
         className={`form-control ${styles.dimSelect}`}
+        type="number"
+        min={cfg.start}
+        max={cfg.end}
+        step={cfg.step}
         value={value}
-        onChange={e => onChange(Number(e.target.value))}
-      >
-        {opts.map(v => (
-          <option key={v} value={v}>{v}</option>
-        ))}
-      </select>
+        onChange={e => {
+          if (e.target.value !== '') onChange(Number(e.target.value));
+        }}
+        onBlur={() => onChange(Math.max(cfg.start, Math.min(cfg.end, value)))}
+      />
     </div>
   );
 }
@@ -485,7 +696,14 @@ function ImgOptionCard({
   const label = opt.label;
   const img = 'img' in opt ? opt.img : undefined;
   const displayImg = stepImgUrl || img;
+  const [imageSource, setImageSource] = useState(displayImg);
+  const [imageFailed, setImageFailed] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setImageSource(displayImg);
+    setImageFailed(false);
+  }, [displayImg]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] && onUpload) {
@@ -501,8 +719,16 @@ function ImgOptionCard({
         onClick={onClick}
       >
         <div className={styles.imgOptionImgWrapper}>
-          {displayImg ? (
-            <img src={displayImg} alt={label} className={styles.imgOptionImg} />
+          {imageSource && !imageFailed ? (
+            <img
+              src={imageSource}
+              alt={label}
+              className={styles.imgOptionImg}
+              onError={() => {
+                if (stepImgUrl && img && imageSource === stepImgUrl) setImageSource(img);
+                else setImageFailed(true);
+              }}
+            />
           ) : (
             <div className={styles.imgOptionPlaceholder} style={{ backgroundColor: 'var(--gray-100)', opacity: 0.5 }}>
             </div>
@@ -559,6 +785,10 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
   // Step 1 – Product type
   const [cushionType, setCushionType] = useState(CUSHION_TYPES[0].key);
+  const [configuration, setConfiguration] = useState('');
+  const [backShape, setBackShape] = useState('');
+  const [seatShape, setSeatShape] = useState('');
+  const [shapePart, setShapePart] = useState<'back' | 'seat'>('back');
   const [stepOneSelection, setStepOneSelection] = useState<'type' | 'shape'>('type');
 
   // Step 2 – read ?type= and &shape= params
@@ -579,6 +809,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const [dims, setDims] = useState<Dims>({
     length: 20, width: 20, bottomWidth: 16, topWidth: 12,
     thickness: 3, ear: 6, diameter: 20,
+    depth: 20, height: 20, seatThickness: 3, backHeight: 20, backThickness: 3,
+    frontWidth: 20, centerDepth: 20, backWidth: 16, totalWidth: 60,
+    section1: 20, section2: 20, section3: 20, section4: 20,
   });
   const [quantity, setQuantity] = useState(1);
 
@@ -614,6 +847,16 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const visibleCushionTypes = CUSHION_TYPES.filter(type =>
     category === 'Pet Bed' ? type.key === 'Pet Bed' : type.key !== 'Pet Bed'
   );
+  const configurations = CONFIGURATION_SHAPE_OPTIONS[cushionType];
+  const configurationNames = configurations ? Object.keys(configurations) : [];
+  const selectedConfigurationShapes = configurations?.[configuration] ?? [];
+  const backPieceCount = getConfigurationPieceCount(configuration, 'back');
+  const seatPieceCount = getConfigurationPieceCount(configuration, 'seat');
+  const activeConfigurationShapes = configurations
+    ? getConfigurationPartShapes(cushionType, configuration, shapePart)
+    : selectedConfigurationShapes;
+  const allowedShapeNames = TYPE_SHAPE_OPTIONS[cushionType];
+  const typeShapeOptions = allowedShapeNames?.map(getShapeOption);
   const visibleShapes = SHAPES.filter(s => {
     if (s.key === 'Pillow' && category !== 'Pet Bed') return false;
     if (category === 'Pet Bed') return ['Box', 'Round', 'Pillow'].includes(s.key);
@@ -626,11 +869,31 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     if (!options) return;
 
     if (options.type) setCushionType(options.type);
+    const savedConfigurations = CONFIGURATION_SHAPE_OPTIONS[options.type ?? cushionType];
+    const legacyConfiguration = savedConfigurations?.[options.shape] ? options.shape : '';
+    const nextConfiguration = options.configuration || legacyConfiguration || Object.keys(savedConfigurations ?? {})[0] || '';
+    setConfiguration(nextConfiguration);
     if (options.category) setCategory(options.category);
     if (options.shape) {
-      setShape(options.shape);
+      const allowedForConfiguration = savedConfigurations?.[nextConfiguration] ?? [];
+      const nextShape = legacyConfiguration
+        ? allowedForConfiguration[0]
+        : (allowedForConfiguration.length && !allowedForConfiguration.includes(options.shape)
+          ? allowedForConfiguration[0]
+          : options.shape);
+      setShape(nextShape || options.shape);
       setStepOneSelection(SHAPES.some(s => s.key === options.shape) ? 'shape' : 'type');
     }
+    const savedType = options.type ?? cushionType;
+    const availableBackShapes = getConfigurationPartShapes(savedType, nextConfiguration, 'back');
+    const availableSeatShapes = getConfigurationPartShapes(savedType, nextConfiguration, 'seat');
+    const savedBackShape = options.backShape || '';
+    const savedSeatShape = options.seatShape || options.shape || '';
+    // A legacy design may not have a back shape saved. Keep it unselected so the
+    // customer explicitly chooses one instead of showing a misleading checkmark.
+    setBackShape(savedBackShape && availableBackShapes.includes(savedBackShape) ? savedBackShape : '');
+    setSeatShape(availableSeatShapes.includes(savedSeatShape) ? savedSeatShape : availableSeatShapes[0] || '');
+    setShapePart(options.backShape || options.seatShape ? 'seat' : 'back');
     if (options.fill) setFill(options.fill);
     if (options.zipper) setZipper(options.zipper);
     if (options.piping) setPiping(options.piping);
@@ -669,10 +932,36 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     }
 
     if (cushionType === 'Pet Bed') {
-      setCushionType(CUSHION_TYPES[0].key);
+      handleCushionTypeSelect(CUSHION_TYPES[0].key);
     }
     if (shape === 'Pillow') {
       setShape('Rectangle');
+    }
+  };
+
+  const handleCushionTypeSelect = (nextType: string) => {
+    setCushionType(nextType);
+    setStepOneSelection('type');
+    const nextConfigurations = CONFIGURATION_SHAPE_OPTIONS[nextType];
+    const nextConfiguration = Object.keys(nextConfigurations ?? {})[0] ?? '';
+    setConfiguration(nextConfiguration);
+    const nextShape = nextConfigurations?.[nextConfiguration]?.[0]
+      ?? TYPE_SHAPE_OPTIONS[nextType]?.[0]
+      ?? (nextType === 'Pet Bed' ? 'Box' : 'Rectangle');
+    setShape(nextShape);
+    setBackShape('');
+    setSeatShape('');
+    setShapePart('back');
+  };
+
+  const handleConfigurationSelect = (nextConfiguration: string) => {
+    setConfiguration(nextConfiguration);
+    const firstShape = CONFIGURATION_SHAPE_OPTIONS[cushionType]?.[nextConfiguration]?.[0];
+    if (firstShape) {
+      setBackShape('');
+      setSeatShape('');
+      setShape(firstShape);
+      setShapePart('back');
     }
   };
 
@@ -731,6 +1020,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   /* ── Is throw pillow? ── */
   const calculatorShape = getCalculatorShape(shape);
   const shapeDisplayLabel = getShapeDisplayLabel(shape);
+  const dimensionFields = getDimensionFields(cushionType, shape);
+  const calculationDims = toCalculationDims(dims, cushionType, shape);
   const isThrowPillow = calculatorShape === 'Rectangle' || calculatorShape === 'Pillow';
 
   /* ── Ensure fill is valid for shape ── */
@@ -743,11 +1034,11 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   }, [calculatorShape, isThrowPillow]);
 
   /* ── PRICE COMPUTATION ── */
-  const lookupDim = calcMax(calculatorShape, dims); // Q8/Q4: max dimension used for lookups
-  const multiplierDim = calcMin(calculatorShape, dims); // R8/R4: min dimension used as multiplier
-  const fabricMeters = calcFabricMeters(calculatorShape, dims);
+  const lookupDim = calcMax(calculatorShape, calculationDims); // Q8/Q4: max dimension used for lookups
+  const multiplierDim = calcMin(calculatorShape, calculationDims); // R8/R4: min dimension used as multiplier
+  const fabricMeters = calcFabricMeters(calculatorShape, calculationDims);
   const sewingCost = calcSewing(lookupDim, quantity);
-  const fiberfillCost = calcFiberfill(calculatorShape, fill, dims, lookupDim, multiplierDim, quantity);
+  const fiberfillCost = calcFiberfill(calculatorShape, fill, calculationDims, lookupDim, multiplierDim, quantity);
   const pipingCost = calcPiping(piping, lookupDim, quantity);
   const tiesCost = calcTies(ties);
   const fabricCost = selectedFabric ? selectedFabric.price * fabricMeters * quantity : 0;
@@ -814,6 +1105,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
   const buildCartDetails = () => ({
     type: cushionType,
+    configuration,
+    ...(configurations ? { backShape, seatShape } : {}),
     category,
     shape,
     fill,
@@ -826,23 +1119,10 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   });
 
   const buildDimString = () => {
-    switch (calculatorShape) {
-      case 'Rectangle':
-      case 'Box':
-      case 'Pillow':
-        return `Length: ${dims.length}", Width: ${dims.width}", Thickness: ${dims.thickness}"`;
-      case 'Trapezium':
-        return `Length: ${dims.length}", Bottom Width: ${dims.bottomWidth}", Top Width: ${dims.topWidth}", Thickness: ${dims.thickness}"`;
-      case 'T Cushion':
-      case 'L Shape':
-        return `Length: ${dims.length}", Bottom Width: ${dims.bottomWidth}", Top Width: ${dims.topWidth}", Thickness: ${dims.thickness}", Ear: ${dims.ear}"`;
-      case 'Round':
-        return `Diameter: ${dims.diameter}", Thickness: ${dims.thickness}"`;
-      case 'Triangle':
-        return `Length: ${dims.length}", Width: ${dims.width}", Thickness: ${dims.thickness}"`;
-      default:
-        return '';
-    }
+    return dimensionFields.map(field => {
+      const label = DIM_CONFIG[field].label.replace(/ \(in\)$/, '');
+      return `${label}: ${dims[field]}"`;
+    }).join(', ');
   };
 
   const handleAddToCart = () => {
@@ -970,8 +1250,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                         opt={opt}
                         selected={stepOneSelection === 'type' && cushionType === opt.key}
                         onClick={() => {
-                          setCushionType(opt.key);
-                          setStepOneSelection('type');
+                          handleCushionTypeSelect(opt.key);
                         }}
                         stepImgUrl={imgUrl}
                         isAdmin={isAdmin}
@@ -1016,23 +1295,115 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
               <div className={styles.stepContent}>
                 <h2>Shape</h2>
 
-                <div className="form-group">
-                  <label className="form-label">Shape</label>
-                  <div className={styles.imgOptGrid}>
-                    {STEP_TWO_SHAPES.map(shapeOption => (
-                      <ImgOptionCard
-                        key={shapeOption.key}
-                        opt={shapeOption}
-                        selected={shape === shapeOption.key}
-                        onClick={() => setShape(shapeOption.key)}
-                      />
-                    ))}
+                {configurations ? (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Configuration</label>
+                      <div className={styles.imgOptGrid}>
+                        {configurationNames.map(name => {
+                          const option = getShapeOption(name);
+                          return (
+                            <ImgOptionCard
+                              key={name}
+                              opt={option}
+                              selected={configuration === name}
+                              onClick={() => handleConfigurationSelect(name)}
+                              stepImgUrl={stepImages[optionKey(name)]}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <div className={styles.shapePartHeader}>
+                        <span className="form-label">Corner Style</span>
+                        <div className={styles.shapePartTabs} role="tablist" aria-label="Choose back or seat shape">
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={shapePart === 'back'}
+                            className={`btn btn-sm ${shapePart === 'back' ? 'btn-primary' : 'btn-outline'} ${styles.shapePartTab}`}
+                            onClick={() => setShapePart('back')}
+                          >
+                            Back Shape{backShape && <span className={styles.shapePartCheck} aria-label="selected">✓</span>}
+                          </button>
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={shapePart === 'seat'}
+                            disabled={!backShape}
+                            className={`btn btn-sm ${shapePart === 'seat' ? 'btn-primary' : 'btn-outline'} ${styles.shapePartTab}`}
+                            onClick={() => setShapePart('seat')}
+                          >
+                            Seat Shape{seatShape && <span className={styles.shapePartCheck} aria-label="selected">✓</span>}
+                          </button>
+                        </div>
+                      </div>
+                      <p className={styles.shapePartHint}>
+                        {!backShape
+                          ? `Choose a shape for ${backPieceCount} back cushion${backPieceCount === 1 ? '' : 's'}.`
+                          : !seatShape
+                            ? `Back shape selected for ${backPieceCount} cushion${backPieceCount === 1 ? '' : 's'}. Now choose a shape for ${seatPieceCount} seat cushion${seatPieceCount === 1 ? '' : 's'}.`
+                            : `Back shape: ${backPieceCount} cushion${backPieceCount === 1 ? '' : 's'}; seat shape: ${seatPieceCount} cushion${seatPieceCount === 1 ? '' : 's'}.`}
+                      </p>
+                      <div className={styles.imgOptGrid}>
+                        {activeConfigurationShapes.map(name => {
+                          const option = {
+                            ...getShapeOption(name),
+                            img: getConfigurationShapePreview(
+                              name,
+                              shapePart === 'back' ? backPieceCount : seatPieceCount,
+                              shapePart
+                            ),
+                          };
+                          const selectedPartShape = shapePart === 'back' ? backShape : seatShape;
+                          return (
+                            <ImgOptionCard
+                              key={name}
+                              opt={option}
+                              selected={selectedPartShape === name}
+                              onClick={() => {
+                                if (shapePart === 'back') {
+                                  setBackShape(name);
+                                  setShapePart('seat');
+                                }
+                                else {
+                                  setSeatShape(name);
+                                  setShape(name);
+                                }
+                              }}
+                              stepImgUrl={stepImages[optionKey(name)]}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="form-group">
+                    <label className="form-label">Shape</label>
+                    <div className={styles.imgOptGrid}>
+                      {(typeShapeOptions ?? STEP_TWO_SHAPES).map(shapeOption => (
+                        <ImgOptionCard
+                          key={shapeOption.key}
+                          opt={shapeOption}
+                          selected={shape === shapeOption.key}
+                          onClick={() => setShape(shapeOption.key)}
+                          stepImgUrl={stepImages[optionKey(shapeOption.key)]}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className={styles.btnRow}>
                   <button className="btn btn-outline" onClick={() => setStep(1)}>← Back</button>
-                  <button className="btn btn-primary" onClick={() => setStep(3)} id="step2-next">Next: Dimensions →</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setStep(3)}
+                    id="step2-next"
+                    disabled={Boolean(configurations && (!backShape || !seatShape))}
+                  >Next: Dimensions →</button>
                 </div>
               </div>
             )}
@@ -1055,53 +1426,14 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 )}
 
                 <div className={styles.dimsGrid}>
-                  {/* Common: quantity always shown */}
-
-                  {/* Rectangle / Throw Pillow / Pillow */}
-                  {(calculatorShape === 'Rectangle' || calculatorShape === 'Box' || calculatorShape === 'Pillow') && (<>
-                    <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
-                    <DimSelect field="width" value={dims.width} onChange={v => setDims(d => ({ ...d, width: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                  </>)}
-
-                  {/* Trapezium */}
-                  {calculatorShape === 'Trapezium' && (<>
-                    <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
-                    <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
-                    <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                  </>)}
-
-                  {/* T Cushion */}
-                  {calculatorShape === 'T Cushion' && (<>
-                    <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
-                    <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
-                    <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                    <DimSelect field="ear" value={dims.ear} onChange={v => setDims(d => ({ ...d, ear: v }))} />
-                  </>)}
-
-                  {/* L Shape */}
-                  {calculatorShape === 'L Shape' && (<>
-                    <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
-                    <DimSelect field="bottomWidth" value={dims.bottomWidth} onChange={v => setDims(d => ({ ...d, bottomWidth: v }))} />
-                    <DimSelect field="topWidth" value={dims.topWidth} onChange={v => setDims(d => ({ ...d, topWidth: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                    <DimSelect field="ear" value={dims.ear} onChange={v => setDims(d => ({ ...d, ear: v }))} />
-                  </>)}
-
-                  {/* Triangle */}
-                  {calculatorShape === 'Triangle' && (<>
-                    <DimSelect field="length" value={dims.length} onChange={v => setDims(d => ({ ...d, length: v }))} />
-                    <DimSelect field="width" value={dims.width} onChange={v => setDims(d => ({ ...d, width: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                  </>)}
-
-                  {/* Round */}
-                  {calculatorShape === 'Round' && (<>
-                    <DimSelect field="diameter" value={dims.diameter} onChange={v => setDims(d => ({ ...d, diameter: v }))} />
-                    <DimSelect field="thickness" value={dims.thickness} onChange={v => setDims(d => ({ ...d, thickness: v }))} />
-                  </>)}
+                  {dimensionFields.map(field => (
+                    <DimensionInput
+                      key={field}
+                      field={field}
+                      value={dims[field]}
+                      onChange={value => setDims(current => ({ ...current, [field]: value }))}
+                    />
+                  ))}
                 </div>
 
                 {/* Fabric Meters (calculated, read-only) */}
@@ -1331,7 +1663,13 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                   <div className={styles.summaryRows}>
                     <div><span>Type</span><strong>{cushionType}</strong></div>
                     <div><span>Category</span><strong>{category}</strong></div>
-                    <div><span>Shape</span><strong>{shapeDisplayLabel}</strong></div>
+                    {configuration && <div><span>Configuration</span><strong>{configuration}</strong></div>}
+                    {configurations ? (
+                      <>
+                        <div><span>Back Shape</span><strong>{backShape}</strong></div>
+                        <div><span>Seat Shape</span><strong>{seatShape}</strong></div>
+                      </>
+                    ) : <div><span>Shape</span><strong>{shapeDisplayLabel}</strong></div>}
                     <div><span>Dimensions</span><strong>{buildDimString()}</strong></div>
                     {/* <div><span>Fabric Meters</span><strong>{fabricMeters.toFixed(4)} m</strong></div> */}
                     <div><span>Fill</span><strong>{fill}</strong></div>

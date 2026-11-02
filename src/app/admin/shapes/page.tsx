@@ -29,8 +29,13 @@ const SHAPE_KEYS = [
   { key: 'All Top Corners Rounded', label: 'All Top Corners Rounded' },
   { key: 'Outer Corners Rounded', label: 'Outer Corners Rounded' },
   { key: 'All Corners Rounded', label: 'All Corners Rounded' },
+  { key: 'Outer Front Corners Rounded', label: 'Outer Front Corners Rounded' },
+  { key: 'All Front Corners Rounded', label: 'All Front Corners Rounded' },
+  { key: 'Outer Back Corners Rounded', label: 'Outer Back Corners Rounded' },
+  { key: 'All Back Corners Rounded', label: 'All Back Corners Rounded' },
   { key: '1 Seat 1 Back', label: '1 Seat 1 Back' },
   { key: '1 Seat 2 Back', label: '1 Seat 2 Back' },
+  { key: '1 Seat 3 Back', label: '1 Seat 3 Back' },
   { key: '2 Seat 1 Back', label: '2 Seat 1 Back' },
   { key: '2 Seat 2 Back', label: '2 Seat 2 Back' },
   { key: '3 Seat 1 Back', label: '3 Seat 1 Back' },
@@ -45,6 +50,9 @@ const SHAPE_KEYS = [
   { key: '3 Outer Back Corners Rounded', label: '3 Outer Back Corners Rounded' },
   { key: '3 Outer Front Corners Rounded', label: '3 Outer Front Corners Rounded' },
   { key: '3 Outer Top Corners Rounded', label: '3 Outer Top Corners Rounded' },
+  { key: 'Rounded Bottom', label: 'Rounded Bottom' },
+  { key: 'Rounded Top', label: 'Rounded Top' },
+  { key: 'Pillow', label: 'Pillow' },
 ];
 
 type MediaItem = {

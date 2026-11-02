@@ -282,6 +282,39 @@
   font-size: .9rem !important;
 }
 
+.shapePartHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .6rem;
+}
+
+.shapePartTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.shapePartTab {
+  min-width: 124px;
+}
+
+.shapePartTab:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.shapePartCheck {
+  margin-left: .35rem;
+  font-weight: 800;
+}
+
+.shapePartHint {
+  margin: .55rem 0 .85rem;
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+
 /* Calculated field */
 .calcField {
   display: flex;
