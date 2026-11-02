@@ -288,7 +288,9 @@ function parseCartDimensions(dimensions?: string): Partial<Dims> {
   ];
 
   fields.forEach(([field, label]) => {
-    const value = parseDimensionValue(dimensions, label);
+    const value = field === 'thickness'
+      ? parseDimensionValue(dimensions, label) ?? parseDimensionValue(dimensions, 'Height')
+      : parseDimensionValue(dimensions, label);
     if (value !== null) parsed[field] = value;
   });
 
@@ -369,7 +371,16 @@ type Dims = {
 
 type DimensionField = Exclude<keyof typeof DIM_CONFIG, 'quantity'>;
 
-function getDimensionFields(type: string, selectedShape: string): DimensionField[] {
+function getDimensionFields(type: string, selectedShape: string, standaloneShape = false): DimensionField[] {
+  if (standaloneShape) {
+    if (selectedShape === 'Trapezium') return ['length', 'bottomWidth', 'topWidth', 'thickness'];
+    if (selectedShape === 'T Cushion' || selectedShape === 'L Shape') {
+      return ['length', 'bottomWidth', 'topWidth', 'thickness', 'ear'];
+    }
+    if (selectedShape === 'Round') return ['diameter', 'thickness'];
+    if (selectedShape === 'Triangle') return ['length', 'width', 'thickness'];
+    return ['length', 'width', 'thickness'];
+  }
   if (selectedShape === 'Trapezoid') return ['thickness', 'frontWidth', 'centerDepth', 'backWidth'];
   if (type === 'Chaise') {
     const count = selectedShape.includes('3 Break') ? 4 : selectedShape.includes('2 Break') ? 3 : 2;
@@ -391,7 +402,8 @@ function getDimensionFields(type: string, selectedShape: string): DimensionField
   return ['length', 'width', 'thickness'];
 }
 
-function toCalculationDims(dims: Dims, type: string, selectedShape: string): Dims {
+function toCalculationDims(dims: Dims, type: string, selectedShape: string, standaloneShape = false): Dims {
+  if (standaloneShape) return dims;
   if (selectedShape === 'Trapezoid') {
     return { ...dims, length: dims.centerDepth, bottomWidth: dims.frontWidth, topWidth: dims.backWidth };
   }
@@ -527,16 +539,17 @@ function calcTies(ties: string): number {
 ═══════════════════════════════════════════════════════════════ */
 
 function DimensionInput({
-  field, value, onChange
+  field, value, onChange, label
 }: {
   field: DimensionField;
   value: number;
   onChange: (v: number) => void;
+  label?: string;
 }) {
   const cfg = DIM_CONFIG[field];
   return (
     <div className={styles.dimGroup}>
-      <label className={`form-label ${styles.dimLabel}`}>{cfg.label}</label>
+      <label className={`form-label ${styles.dimLabel}`}>{label ?? cfg.label}</label>
       <input
         className={`form-control ${styles.dimSelect}`}
         type="number"
@@ -847,7 +860,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   const visibleCushionTypes = CUSHION_TYPES.filter(type =>
     category === 'Pet Bed' ? type.key === 'Pet Bed' : type.key !== 'Pet Bed'
   );
-  const configurations = CONFIGURATION_SHAPE_OPTIONS[cushionType];
+  const isStandaloneShapeSelection = stepOneSelection === 'shape';
+  const configurations = isStandaloneShapeSelection ? undefined : CONFIGURATION_SHAPE_OPTIONS[cushionType];
   const configurationNames = configurations ? Object.keys(configurations) : [];
   const selectedConfigurationShapes = configurations?.[configuration] ?? [];
   const backPieceCount = getConfigurationPieceCount(configuration, 'back');
@@ -1020,8 +1034,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   /* ── Is throw pillow? ── */
   const calculatorShape = getCalculatorShape(shape);
   const shapeDisplayLabel = getShapeDisplayLabel(shape);
-  const dimensionFields = getDimensionFields(cushionType, shape);
-  const calculationDims = toCalculationDims(dims, cushionType, shape);
+  const dimensionFields = getDimensionFields(cushionType, shape, isStandaloneShapeSelection);
+  const calculationDims = toCalculationDims(dims, cushionType, shape, isStandaloneShapeSelection);
   const isThrowPillow = calculatorShape === 'Rectangle' || calculatorShape === 'Pillow';
 
   /* ── Ensure fill is valid for shape ── */
@@ -1120,7 +1134,10 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
   const buildDimString = () => {
     return dimensionFields.map(field => {
-      const label = DIM_CONFIG[field].label.replace(/ \(in\)$/, '');
+      const isShapeHeight = isStandaloneShapeSelection
+        && (shape === 'T Cushion' || shape === 'L Shape')
+        && field === 'thickness';
+      const label = isShapeHeight ? 'Height' : DIM_CONFIG[field].label.replace(/ \(in\)$/, '');
       return `${label}: ${dims[field]}"`;
     }).join(', ');
   };
@@ -1372,7 +1389,6 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                                   setShape(name);
                                 }
                               }}
-                              stepImgUrl={stepImages[optionKey(name)]}
                             />
                           );
                         })}
@@ -1415,11 +1431,32 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 <p className={styles.stepSubtext} style={{ marginTop: 0, marginBottom: '1rem' }}>
                   Configuring for: <strong style={{ color: 'var(--brand-primary)' }}>{shapeDisplayLabel}</strong>
                 </p>
-                {stepImages[optionKey(shape)] && (
+                {configurations && stepOneSelection !== 'shape' ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                    {([
+                      { part: 'back' as const, label: `Back cushions (${backPieceCount})`, selectedShape: backShape, count: backPieceCount },
+                      { part: 'seat' as const, label: `Seat cushions (${seatPieceCount})`, selectedShape: seatShape, count: seatPieceCount },
+                    ]).map(preview => (
+                      <div key={preview.part} style={{ width: '100%', maxWidth: '320px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '0.75rem 1rem' }}>
+                        <strong style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{preview.label}: {preview.selectedShape}</strong>
+                        <img
+                          src={getConfigurationShapePreview(preview.selectedShape, preview.count, preview.part)}
+                          alt={`${preview.label}, ${preview.selectedShape}`}
+                          style={{ width: '100%', height: 'auto', display: 'block' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                   <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '0.5rem', marginBottom: '1.5rem' }}>
                     <img
-                      src={stepImages[optionKey(shape)]}
+                      src={stepImages[optionKey(shape)] || getShapeOption(shape).img || getBasicShapePreview(shape)}
                       alt={shape}
+                      onError={event => {
+                        const fallback = getShapeOption(shape).img || getBasicShapePreview(shape);
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = fallback;
+                      }}
                       style={{ width: '100%', height: 'auto', display: 'block' }}
                     />
                   </div>
@@ -1431,6 +1468,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                       key={field}
                       field={field}
                       value={dims[field]}
+                      label={isStandaloneShapeSelection && (shape === 'T Cushion' || shape === 'L Shape') && field === 'thickness' ? 'Height (in)' : undefined}
                       onChange={value => setDims(current => ({ ...current, [field]: value }))}
                     />
                   ))}
@@ -1466,7 +1504,7 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 </div>
 
                 <div className={styles.btnRow}>
-                  <button className="btn btn-outline" onClick={() => setStep(2)}>← Back</button>
+                  <button className="btn btn-outline" onClick={() => setStep(stepOneSelection === 'shape' ? 1 : 2)}>← Back</button>
                   <button className="btn btn-primary" onClick={() => setStep(4)} id="step3-next">Next: Fill Type →</button>
                 </div>
               </div>
