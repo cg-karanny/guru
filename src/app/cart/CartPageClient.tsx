@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
-import { getOrderedCustomOptions } from '@/lib/format-options';
+import { getCustomOptionLabel, getOrderedCustomOptions } from '@/lib/format-options';
 
 // ── Defined OUTSIDE the main component so React doesn't remount on every render ──
 const inputStyle: React.CSSProperties = {
@@ -514,7 +514,7 @@ export default function CartPageClient() {
                           <span style={{ fontWeight: 600 }}>Details:</span>
                           {getOrderedCustomOptions(item.customOptions).map(([k, v], i, arr) => (
                             <span key={k} style={{ wordBreak: 'break-word' }}>
-                              {k.charAt(0).toUpperCase() + k.slice(1)}: {v}{i < arr.length - 1 ? ' |' : ''}
+                              {getCustomOptionLabel(k)}: {v}{i < arr.length - 1 ? ' |' : ''}
                             </span>
                           ))}
                         </div>
@@ -696,7 +696,7 @@ export default function CartPageClient() {
                             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem', lineHeight: 1.4, display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                               {getOrderedCustomOptions(item.customOptions).map(([k, v], i, arr) => (
                                 <span key={k} style={{ wordBreak: 'break-word' }}>
-                                  {k.charAt(0).toUpperCase() + k.slice(1)}: {v as string}{i < arr.length - 1 ? ' |' : ''}
+                                  {getCustomOptionLabel(k)}: {v as string}{i < arr.length - 1 ? ' |' : ''}
                                 </span>
                               ))}
                             </div>

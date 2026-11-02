@@ -1,4 +1,7 @@
 export const ORDERED_CUSTOM_KEYS = [
+  'backshape',
+  'seatshape',
+  'configuration',
   'category',
   'fill',
   'zipper',
@@ -28,4 +31,8 @@ export function getOrderedCustomOptions(options: Record<string, string> | undefi
     // If neither is in the array, preserve original order or sort alphabetically
     return 0;
   });
+}
+
+export function getCustomOptionLabel(key: string): string {
+  return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, letter => letter.toUpperCase());
 }
