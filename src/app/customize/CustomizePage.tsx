@@ -65,6 +65,18 @@ function getBasicShapePreview(shape: string): string {
     case 'L Shape':
       outline = '<path d="M34 28 H92 V68 H166 V100 H34 Z" />';
       break;
+    case 'Rounded Bottom':
+      outline = '<path d="M34 28 H166 V85 Q166 100 151 100 H49 Q34 100 34 85 Z" />';
+      break;
+    case 'Rounded Top':
+      outline = '<path d="M49 28 H151 Q166 28 166 43 V100 H34 V43 Q34 28 49 28 Z" />';
+      break;
+    case 'Toss Pillow Shape':
+      outline = '<rect x="48" y="26" width="104" height="76" rx="18" />';
+      break;
+    case 'Lumbar Pillow Shape':
+      outline = '<rect x="24" y="38" width="152" height="50" rx="18" />';
+      break;
     case 'Triangle':
       outline = '<path d="M100 24 L168 100 H32 Z" />';
       break;
@@ -76,6 +88,20 @@ function getBasicShapePreview(shape: string): string {
   }
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128"><g fill="#fff" stroke="${orange}" stroke-width="5" stroke-linejoin="round">${outline}</g></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function getConfigurationCardPreview(seatCount: number, backCount: number): string {
+  const row = (count: number, y: number) => {
+    const gap = 5;
+    const availableWidth = 104;
+    const width = (availableWidth - gap * (count - 1)) / count;
+    return Array.from({ length: count }, (_, index) => {
+      const x = 8 + index * (width + gap);
+      return `<rect x="${x}" y="${y}" width="${width}" height="23" rx="3" />`;
+    }).join('');
+  };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 82"><g fill="#fff" stroke="#fb4a1e" stroke-width="3">${row(backCount, 10)}${row(seatCount, 47)}</g></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -111,13 +137,16 @@ const STEP_TWO_SHAPES: ShapeDef[] = [
   { key: 'All Top Corners Rounded', label: 'All Top Corners Rounded', img: '/images/shapes/All Top Corners Rounded.png' },
   { key: 'Outer Corners Rounded', label: 'Outer Corners Rounded', img: '/images/shapes/Outer Corners Rounded.png' },
   { key: 'All Corners Rounded', label: 'All Corners Rounded', img: '/images/shapes/All Corners Rounded.png' },
+  { key: 'Bolster', label: 'Bolster Pillow', img: '/images/calculator-types/bolster-pillow.png' },
+  { key: 'Toss Pillow Shape', label: 'Pillow', img: getBasicShapePreview('Toss Pillow Shape') },
+  { key: 'Lumbar Pillow Shape', label: 'Lumbar Pillow', img: getBasicShapePreview('Lumbar Pillow Shape') },
   { key: 'Outer Front Corners Rounded', label: 'Outer Front Corners Rounded', img: '/images/shapes/Outer Bottom Corners Rounded.png' },
   { key: 'All Front Corners Rounded', label: 'All Front Corners Rounded', img: '/images/shapes/All Bottom Corners Rounded.png' },
   { key: 'Outer Back Corners Rounded', label: 'Outer Back Corners Rounded', img: '/images/shapes/Outer Top Corners Rounded.png' },
   { key: 'All Back Corners Rounded', label: 'All Back Corners Rounded', img: '/images/shapes/All Top Corners Rounded.png' },
   { key: '1 Seat 1 Back', label: '1 Seat 1 Back', img: '/images/shapes/1 Seat 1 Back.png' },
   { key: '1 Seat 2 Back', label: '1 Seat 2 Back', img: '/images/shapes/1 Seat 2 Back.png' },
-  { key: '1 Seat 3 Back', label: '1 Seat 3 Back' },
+  { key: '1 Seat 3 Back', label: '1 Seat 3 Back', img: getConfigurationCardPreview(1, 3) },
   { key: '2 Seat 1 Back', label: '2 Seat 1 Back', img: '/images/shapes/2 Seat 1 Back.png' },
   { key: '2 Seat 2 Back', label: '2 Seat 2 Back', img: '/images/shapes/2 Seat 2 Back.png' },
   { key: '3 Seat 1 Back', label: '3 Seat 1 Back', img: '/images/shapes/3 Seat 1 Back.png' },
@@ -132,8 +161,8 @@ const STEP_TWO_SHAPES: ShapeDef[] = [
   { key: '3 Outer Back Corners Rounded', label: '3 Outer Back Corners Rounded', img: '/images/shapes/3 Outer Back Corners Rounded.png' },
   { key: '3 Outer Front Corners Rounded', label: '3 Outer Front Corners Rounded', img: '/images/shapes/3 Outer Front Corners Rounded.png' },
   { key: '3 Outer Top Corners Rounded', label: '3 Outer Top Corners Rounded', img: '/images/shapes/3 Outer Top Corners Rounded.png' },
-  { key: 'Rounded Bottom', label: 'Rounded Bottom' },
-  { key: 'Rounded Top', label: 'Rounded Top' },
+  { key: 'Rounded Bottom', label: 'Rounded Bottom', img: getBasicShapePreview('Rounded Bottom') },
+  { key: 'Rounded Top', label: 'Rounded Top', img: getBasicShapePreview('Rounded Top') },
   { key: 'Pillow', label: 'Pillow' },
 ];
 
@@ -144,13 +173,20 @@ const TYPE_SHAPE_OPTIONS: Record<string, string[]> = {
   'Bed Cushion': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid'],
   Chair: ['Squared Corners', 'Rounded Corners', 'Rounded Top'],
   'Chair No Back': ['Squared Corners', 'Rounded Corners', 'Rounded Front', 'Rounded Back', 'Trapezoid', 'Circle'],
-  Ottoman: ['Squared Corners', 'Rounded Corners'],
-  'Toss Pillow': ['Pillow'],
-  'Lumbar Pillow': ['Pillow'],
-  'Bolster Pillow': ['Pillow'],
+  Ottoman: ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+  'Pet Bed': ['Squared Corners', 'Rounded Corners', 'Circle'],
+  'Toss Pillow': ['Toss Pillow Shape'],
+  'Lumbar Pillow': ['Lumbar Pillow Shape'],
+  'Bolster Pillow': ['Bolster'],
 };
 
 const CONFIGURATION_SHAPE_OPTIONS: Record<string, Record<string, string[]>> = {
+  Chair: {
+    '1 Seat 1 Back': ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+  },
+  'Bench w Back': {
+    '1 Seat 1 Back': ['Squared Corners', 'Rounded Bottom', 'Rounded Top', 'Rounded Corners'],
+  },
   Loveseat: {
     '2 Seat 2 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
     '2 Seat 1 Back': ['Squared Corners', 'Outer Bottom Corners Rounded', 'All Bottom Corners Rounded', 'Outer Top Corners Rounded', 'All Top Corners Rounded', 'Outer Corners Rounded', 'All Corners Rounded'],
@@ -178,7 +214,10 @@ const BACK_CORNER_STYLES = [
 ];
 
 function getConfigurationPartShapes(type: string, configuration: string, part: 'back' | 'seat'): string[] {
-  const configuredShapes = CONFIGURATION_SHAPE_OPTIONS[type]?.[configuration] ?? [];
+  const configuredShapes = CONFIGURATION_SHAPE_OPTIONS[type]?.[configuration]
+    ?? (type === 'Bench w Back' ? CONFIGURATION_SHAPE_OPTIONS[type]['1 Seat 1 Back'] : undefined)
+    ?? [];
+  if (type === 'Bench w Back' || type === 'Chair') return configuredShapes;
   // A single-seat/single-back layout keeps the shape set provided in the workbook.
   // One-back configurations with the four-style workbook list use front/back labels
   // for the back cushion and bottom/top labels for the seat cushion.
@@ -244,13 +283,17 @@ function optionKey(value: string) {
 
 function getCalculatorShape(selectedShape: string): string {
   if (SHAPES.some(s => s.key === selectedShape)) return selectedShape;
+  if (selectedShape === 'Toss Pillow Shape' || selectedShape === 'Lumbar Pillow Shape') return 'Pillow';
+  if (selectedShape === 'Bolster') return 'Round';
   if (selectedShape === 'Circle') return 'Round';
   if (selectedShape === 'Trapezoid') return 'Trapezium';
   return 'Box';
 }
 
 function getShapeDisplayLabel(selectedShape: string): string {
-  return SHAPES.find(s => s.key === selectedShape)?.label ?? selectedShape;
+  return SHAPES.find(s => s.key === selectedShape)?.label
+    ?? STEP_TWO_SHAPES.find(s => s.key === selectedShape)?.label
+    ?? selectedShape;
 }
 
 function parseDimensionValue(dimensions: string, label: string): number | null {
@@ -381,20 +424,26 @@ function getDimensionFields(type: string, selectedShape: string, standaloneShape
     if (selectedShape === 'Triangle') return ['length', 'width', 'thickness'];
     return ['length', 'width', 'thickness'];
   }
+  if (type === 'Bolster Pillow') return ['width', 'diameter'];
   if (selectedShape === 'Trapezoid') return ['thickness', 'frontWidth', 'centerDepth', 'backWidth'];
   if (type === 'Chaise') {
     const count = selectedShape.includes('3 Break') ? 4 : selectedShape.includes('2 Break') ? 3 : 2;
     return ['thickness', 'width', ...(['section1', 'section2', 'section3', 'section4'] as const).slice(0, count)];
   }
   if (type === 'Chair') return ['seatThickness', 'width', 'depth', 'backHeight', 'backThickness'];
-  if (type === 'Loveseat' || type === 'Sofa') return ['seatThickness', 'totalWidth', 'depth', 'backHeight', 'backThickness'];
+  if (type === 'Loveseat' || type === 'Sofa' || type === 'Bench w Back') {
+    return ['seatThickness', 'totalWidth', 'depth', 'backHeight', 'backThickness'];
+  }
   if (type === 'Bench Window Back') return ['thickness', 'width', 'height'];
+  if (type === 'Pet Bed') {
+    return selectedShape === 'Circle' ? ['diameter', 'thickness'] : ['width', 'depth', 'thickness'];
+  }
   if (type === 'Bench Window Seat' || type === 'Bed Cushion' || type === 'Chair No Back') {
     if (selectedShape === 'Circle') return ['thickness', 'width'];
     return ['thickness', 'width', 'depth'];
   }
   if (type === 'Ottoman') return ['seatThickness', 'width', 'depth'];
-  if (type === 'Toss Pillow' || type === 'Lumbar Pillow' || type === 'Bolster Pillow') return ['length', 'width', 'thickness'];
+  if (type === 'Toss Pillow' || type === 'Lumbar Pillow') return ['width', 'height'];
   if (selectedShape === 'Trapezium') return ['length', 'bottomWidth', 'topWidth', 'thickness'];
   if (selectedShape === 'Round') return ['diameter', 'thickness'];
   if (selectedShape === 'T Cushion' || selectedShape === 'L Shape') return ['length', 'bottomWidth', 'topWidth', 'thickness', 'ear'];
@@ -404,6 +453,10 @@ function getDimensionFields(type: string, selectedShape: string, standaloneShape
 
 function toCalculationDims(dims: Dims, type: string, selectedShape: string, standaloneShape = false): Dims {
   if (standaloneShape) return dims;
+  if (type === 'Bolster Pillow') return { ...dims, length: dims.width, thickness: dims.width };
+  if (type === 'Toss Pillow' || type === 'Lumbar Pillow') {
+    return { ...dims, length: dims.width, width: dims.height };
+  }
   if (selectedShape === 'Trapezoid') {
     return { ...dims, length: dims.centerDepth, bottomWidth: dims.frontWidth, topWidth: dims.backWidth };
   }
@@ -412,7 +465,7 @@ function toCalculationDims(dims: Dims, type: string, selectedShape: string, stan
     const length = [dims.section1, dims.section2, dims.section3, dims.section4].slice(0, sectionCount).reduce((sum, value) => sum + value, 0);
     return { ...dims, length, thickness: dims.thickness };
   }
-  if (type === 'Loveseat' || type === 'Sofa') {
+  if (type === 'Loveseat' || type === 'Sofa' || type === 'Bench w Back') {
     return { ...dims, length: dims.depth, width: dims.totalWidth, thickness: dims.seatThickness };
   }
   if (type === 'Chair') return { ...dims, length: dims.depth, thickness: dims.seatThickness };
@@ -539,28 +592,34 @@ function calcTies(ties: string): number {
 ═══════════════════════════════════════════════════════════════ */
 
 function DimensionInput({
-  field, value, onChange, label
+  field, value, onChange, label, min, max, step
 }: {
   field: DimensionField;
   value: number;
   onChange: (v: number) => void;
   label?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }) {
   const cfg = DIM_CONFIG[field];
+  const minValue = min ?? cfg.start;
+  const maxValue = max ?? cfg.end;
+  const stepValue = step ?? cfg.step;
   return (
     <div className={styles.dimGroup}>
       <label className={`form-label ${styles.dimLabel}`}>{label ?? cfg.label}</label>
       <input
         className={`form-control ${styles.dimSelect}`}
         type="number"
-        min={cfg.start}
-        max={cfg.end}
-        step={cfg.step}
+        min={minValue}
+        max={maxValue}
+        step={stepValue}
         value={value}
         onChange={e => {
           if (e.target.value !== '') onChange(Number(e.target.value));
         }}
-        onBlur={() => onChange(Math.max(cfg.start, Math.min(cfg.end, value)))}
+        onBlur={() => onChange(Math.max(minValue, Math.min(maxValue, value)))}
       />
     </div>
   );
@@ -882,27 +941,35 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
     const options = editingDesign.customOptions;
     if (!options) return;
 
+    const savedType = options.type ?? cushionType;
+    const savedShape = savedType === 'Bolster Pillow' && options.shape === 'Pillow'
+      ? 'Bolster'
+      : options.shape;
     if (options.type) setCushionType(options.type);
-    const savedConfigurations = CONFIGURATION_SHAPE_OPTIONS[options.type ?? cushionType];
-    const legacyConfiguration = savedConfigurations?.[options.shape] ? options.shape : '';
+    const savedConfigurations = CONFIGURATION_SHAPE_OPTIONS[savedType];
+    const allowedForType = TYPE_SHAPE_OPTIONS[savedType] ?? [];
+    const legacyConfiguration = savedConfigurations?.[savedShape ?? ''] ? savedShape : '';
     const nextConfiguration = options.configuration || legacyConfiguration || Object.keys(savedConfigurations ?? {})[0] || '';
     setConfiguration(nextConfiguration);
     if (options.category) setCategory(options.category);
-    if (options.shape) {
+    if (savedShape) {
       const allowedForConfiguration = savedConfigurations?.[nextConfiguration] ?? [];
       const nextShape = legacyConfiguration
         ? allowedForConfiguration[0]
-        : (allowedForConfiguration.length && !allowedForConfiguration.includes(options.shape)
-          ? allowedForConfiguration[0]
-          : options.shape);
-      setShape(nextShape || options.shape);
-      setStepOneSelection(SHAPES.some(s => s.key === options.shape) ? 'shape' : 'type');
+        : savedConfigurations
+          ? (allowedForConfiguration.length && !allowedForConfiguration.includes(savedShape)
+            ? allowedForConfiguration[0]
+            : savedShape)
+          : (allowedForType.length && !allowedForType.includes(savedShape)
+            ? allowedForType[0]
+            : savedShape);
+      setShape(nextShape || savedShape);
+      setStepOneSelection(SHAPES.some(s => s.key === (nextShape || savedShape)) ? 'shape' : 'type');
     }
-    const savedType = options.type ?? cushionType;
     const availableBackShapes = getConfigurationPartShapes(savedType, nextConfiguration, 'back');
     const availableSeatShapes = getConfigurationPartShapes(savedType, nextConfiguration, 'seat');
     const savedBackShape = options.backShape || '';
-    const savedSeatShape = options.seatShape || options.shape || '';
+    const savedSeatShape = options.seatShape || savedShape || '';
     // A legacy design may not have a back shape saved. Keep it unselected so the
     // customer explicitly chooses one instead of showing a misleading checkmark.
     setBackShape(savedBackShape && availableBackShapes.includes(savedBackShape) ? savedBackShape : '');
@@ -939,8 +1006,8 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
 
     if (nextCategory === 'Pet Bed') {
       setCushionType('Pet Bed');
-      if (!['Box', 'Round', 'Pillow'].includes(shape)) {
-        setShape('Box');
+      if (!TYPE_SHAPE_OPTIONS['Pet Bed'].includes(shape)) {
+        setShape(TYPE_SHAPE_OPTIONS['Pet Bed'][0]);
       }
       return;
     }
@@ -1032,8 +1099,16 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
   }, []);
 
   /* ── Is throw pillow? ── */
-  const calculatorShape = getCalculatorShape(shape);
-  const shapeDisplayLabel = getShapeDisplayLabel(shape);
+  // Older saved Bolster Pillow designs stored `Pillow` as their shape key.
+  // Resolve that legacy key at render/calculation time as well as on load so
+  // the label, preview, and pricing all use the bolster shape consistently.
+  const resolvedShape = !isStandaloneShapeSelection && cushionType === 'Bolster Pillow' && shape === 'Pillow'
+    ? 'Bolster'
+    : shape;
+  const calculatorShape = getCalculatorShape(resolvedShape);
+  const shapeDisplayLabel = cushionType === 'Toss Pillow' || cushionType === 'Lumbar Pillow'
+    ? cushionType
+    : getShapeDisplayLabel(resolvedShape);
   const dimensionFields = getDimensionFields(cushionType, shape, isStandaloneShapeSelection);
   const calculationDims = toCalculationDims(dims, cushionType, shape, isStandaloneShapeSelection);
   const isThrowPillow = calculatorShape === 'Rectangle' || calculatorShape === 'Pillow';
@@ -1450,10 +1525,10 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                 ) : (
                   <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '0.5rem', marginBottom: '1.5rem' }}>
                     <img
-                      src={stepImages[optionKey(shape)] || getShapeOption(shape).img || getBasicShapePreview(shape)}
-                      alt={shape}
+                      src={stepImages[optionKey(resolvedShape)] || getShapeOption(resolvedShape).img || getBasicShapePreview(resolvedShape)}
+                      alt={shapeDisplayLabel}
                       onError={event => {
-                        const fallback = getShapeOption(shape).img || getBasicShapePreview(shape);
+                        const fallback = getShapeOption(resolvedShape).img || getBasicShapePreview(resolvedShape);
                         event.currentTarget.onerror = null;
                         event.currentTarget.src = fallback;
                       }}
@@ -1469,6 +1544,9 @@ export default function CustomizePage({ initialStepImages = {} }: { initialStepI
                       field={field}
                       value={dims[field]}
                       label={isStandaloneShapeSelection && (shape === 'T Cushion' || shape === 'L Shape') && field === 'thickness' ? 'Height (in)' : undefined}
+                      min={!isStandaloneShapeSelection && cushionType === 'Bolster Pillow' && field === 'width' ? 4 : undefined}
+                      max={!isStandaloneShapeSelection && cushionType === 'Bolster Pillow' && field === 'width' ? 80 : !isStandaloneShapeSelection && cushionType === 'Bolster Pillow' && field === 'diameter' ? 38 : undefined}
+                      step={!isStandaloneShapeSelection && cushionType === 'Bolster Pillow' && (field === 'width' || field === 'diameter') ? 0.5 : undefined}
                       onChange={value => setDims(current => ({ ...current, [field]: value }))}
                     />
                   ))}
